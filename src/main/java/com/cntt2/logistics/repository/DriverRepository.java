@@ -8,7 +8,7 @@ import java.util.Optional;
 
 @Repository
 public interface DriverRepository extends JpaRepository<Driver, String> {
-    Driver findByUserId(String userId);
+    Optional<Driver> findByUserId(String userId);
     boolean existsByVehiclePlate(String vehiclePlate);
 
 }

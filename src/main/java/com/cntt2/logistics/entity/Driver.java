@@ -8,6 +8,7 @@ import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "drivers")
@@ -38,6 +39,10 @@ public class Driver {
     @JoinColumn(name = "warehouse_id")
     @JsonIgnoreProperties({"manager", "drivers"})
     WarehouseLocations warehouse;
+
+    @OneToMany(mappedBy = "driver", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnoreProperties("driver")
+    List<DriverWorkSchedule> schedules;
 
     @Column(nullable = false, updatable = false)
     LocalDateTime createdAt = LocalDateTime.now();
