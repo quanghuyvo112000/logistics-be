@@ -18,7 +18,6 @@ public class WarehouseLocationUpdateRequest {
     private String phone;
     private String province;
     private String district;
-    private String ward;
     private String address;
     private String managerId;
 }

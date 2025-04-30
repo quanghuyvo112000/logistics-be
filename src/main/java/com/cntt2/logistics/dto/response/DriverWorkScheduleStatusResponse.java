@@ -1,5 +1,7 @@
-package com.cntt2.logistics.dto.request;
+package com.cntt2.logistics.dto.response;
 
+import com.cntt2.logistics.entity.DriverShift;
+import com.cntt2.logistics.entity.ScheduleStatus;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -12,11 +14,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@Data
-public class WarehouseLocationRequest {
-    private String name;
-    private String phone;
-    private String province;
-    private String district;
-    private String address;
+public class DriverWorkScheduleStatusResponse {
+    String driverId;
+    String nameDriver;
 }

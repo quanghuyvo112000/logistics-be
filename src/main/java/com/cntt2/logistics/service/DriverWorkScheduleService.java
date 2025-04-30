@@ -3,6 +3,7 @@ package com.cntt2.logistics.service;
 import com.cntt2.logistics.dto.request.DriverWorkScheduleRequest;
 import com.cntt2.logistics.dto.request.UpdateDriverWorkScheduleRequest;
 import com.cntt2.logistics.dto.response.DriverWorkScheduleResponse;
+import com.cntt2.logistics.dto.response.DriverWorkScheduleStatusResponse;
 import com.cntt2.logistics.entity.*;
 import com.cntt2.logistics.repository.DriverRepository;
 import com.cntt2.logistics.repository.DriverWorkScheduleRepository;
@@ -16,8 +17,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -70,7 +71,7 @@ public class DriverWorkScheduleService {
                 .build();
     }
 
-    @PreAuthorize("hasRole('WAREHOUSE_MANAGER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'WAREHOUSE_MANAGER')")
     public DriverWorkScheduleResponse updateScheduleStatus(UpdateDriverWorkScheduleRequest request) {
         DriverWorkSchedule schedule = scheduleRepository.findById(request.getScheduleId())
                 .orElseThrow(() -> new EntityNotFoundException("Schedule not found"));
@@ -117,6 +118,39 @@ public class DriverWorkScheduleService {
         return schedules.stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());
+    }
+
+    public List<DriverWorkScheduleStatusResponse> getAllSchedulesByManagerWithApprovedStatus() {
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        User manager = userRepository.findByEmail(email)
+                .orElseThrow(() -> new EntityNotFoundException("User not found with email: " + email));
+
+        if (!manager.getRole().name().equals("WAREHOUSE_MANAGER")) {
+            throw new SecurityException("User is not a warehouse manager");
+        }
+
+        // Tìm warehouse mà user này đang quản lý
+        WarehouseLocations warehouse = warehouseLocationsRepository.findByManager(manager)
+                .orElseThrow(() -> new EntityNotFoundException("Warehouse not found for manager"));
+
+        // Lấy ngày hôm sau
+        LocalDate tomorrow = LocalDate.now().plusDays(1);
+
+        // Lấy tất cả lịch làm việc của các tài xế thuộc warehouse này có trạng thái APPROVED
+        List<DriverWorkSchedule> schedules = scheduleRepository.findByWarehouseIdAndStatusAndWorkDate(warehouse.getId(), ScheduleStatus.APPROVED, tomorrow);
+
+        // Chuyển đổi danh sách DriverWorkSchedule thành DriverWorkScheduleStatusResponse
+        return schedules.stream()
+                .map(this::toStatusResponse)
+                .collect(Collectors.toList());
+    }
+
+    private DriverWorkScheduleStatusResponse toStatusResponse(DriverWorkSchedule schedule) {
+        return DriverWorkScheduleStatusResponse.builder()
+                .driverId(schedule.getDriver().getId())
+                .nameDriver(schedule.getDriver().getUser().getFullName())
+                .build();
     }
 
     private DriverWorkScheduleResponse toResponse(DriverWorkSchedule schedule) {

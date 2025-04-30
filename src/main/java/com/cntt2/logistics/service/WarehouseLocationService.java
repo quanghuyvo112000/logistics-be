@@ -1,7 +1,9 @@
 package com.cntt2.logistics.service;
 
 import com.cntt2.logistics.dto.request.AssignManagerRequest;
+import com.cntt2.logistics.dto.request.SearchWarehouseLocationRequest;
 import com.cntt2.logistics.dto.request.WarehouseLocationRequest;
+import com.cntt2.logistics.dto.response.SearchWarehouseLocationResponse;
 import com.cntt2.logistics.dto.response.WarehouseLocationResponse;
 import com.cntt2.logistics.entity.Role;
 import com.cntt2.logistics.entity.User;
@@ -35,7 +37,6 @@ public class WarehouseLocationService {
                 .phone(request.getPhone())
                 .province(request.getProvince())
                 .district(request.getDistrict())
-                .ward(request.getWard())
                 .address(request.getAddress())
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
@@ -53,7 +54,6 @@ public class WarehouseLocationService {
                         .phone(warehouse.getPhone())
                         .province(warehouse.getProvince())
                         .district(warehouse.getDistrict())
-                        .ward(warehouse.getWard())
                         .address(warehouse.getAddress())
                         .createdAt(warehouse.getCreatedAt())
                         .updatedAt(warehouse.getUpdatedAt())
@@ -118,7 +118,6 @@ public class WarehouseLocationService {
                 .phone(warehouse.getPhone())
                 .province(warehouse.getProvince())
                 .district(warehouse.getDistrict())
-                .ward(warehouse.getWard())
                 .address(warehouse.getAddress())
                 .createdAt(warehouse.getCreatedAt())
                 .updatedAt(warehouse.getUpdatedAt())
@@ -175,4 +174,14 @@ public class WarehouseLocationService {
         warehouseLocationsRepository.save(warehouse);
     }
 
+    public List<SearchWarehouseLocationResponse> searchWarehouseByLocation(SearchWarehouseLocationRequest request) {
+        List<WarehouseLocations> warehouses = warehouseLocationsRepository
+                .findByProvinceAndDistrict(request.getProvince(), request.getDistrict());
+
+        return warehouses.stream()
+                .map(warehouse -> new SearchWarehouseLocationResponse(
+                        warehouse.getId(),
+                        warehouse.getName()))
+                .collect(Collectors.toList());
+    }
 }

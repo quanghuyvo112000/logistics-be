@@ -20,7 +20,6 @@ public class  WarehouseLocationResponse {
     String phone;
     String province;
     String district;
-    String ward;
     String address;
     LocalDateTime createdAt;
     LocalDateTime updatedAt;

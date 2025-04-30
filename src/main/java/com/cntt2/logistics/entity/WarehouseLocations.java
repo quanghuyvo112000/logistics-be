@@ -36,9 +36,6 @@ public class WarehouseLocations {
     String district;
 
     @Column(nullable = false)
-    String ward;
-
-    @Column(nullable = false)
     String address;
 
     @Column(nullable = false, updatable = false)
