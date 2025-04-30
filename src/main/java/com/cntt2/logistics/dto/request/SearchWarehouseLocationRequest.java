@@ -3,9 +3,6 @@ package com.cntt2.logistics.dto.request;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-
 @Getter
 @Setter
 @NoArgsConstructor
@@ -13,10 +10,7 @@ import java.time.LocalDateTime;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Data
-public class WarehouseLocationRequest {
-    private String name;
-    private String phone;
+public class SearchWarehouseLocationRequest {
     private String province;
     private String district;
-    private String address;
 }

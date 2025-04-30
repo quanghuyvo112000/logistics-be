@@ -2,6 +2,7 @@ package com.cntt2.logistics.controller;
 
 import com.cntt2.logistics.dto.request.*;
 import com.cntt2.logistics.dto.response.DriverWorkScheduleResponse;
+import com.cntt2.logistics.dto.response.DriverWorkScheduleStatusResponse;
 import com.cntt2.logistics.service.DriverWorkScheduleService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AccessLevel;
@@ -53,6 +54,23 @@ public class DriverWorkScheduleController {
     public ResponseEntity<ApiResponse<List<DriverWorkScheduleResponse>>> getAllSchedulesByManager() {
         try {
             List<DriverWorkScheduleResponse> responses = driverWorkScheduleService.getAllSchedulesByManager();
+            return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "All driver schedules for warehouse", responses));
+        } catch (SecurityException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(new ApiResponse<>(HttpStatus.FORBIDDEN.value(), e.getMessage(), null));
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ApiResponse<>(HttpStatus.NOT_FOUND.value(), e.getMessage(), null));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Unexpected error", null));
+        }
+    }
+
+    @GetMapping("/manager-status")
+    public ResponseEntity<ApiResponse<List<DriverWorkScheduleStatusResponse>>> getAllSchedulesByManagerWithApprovedStatus() {
+        try {
+            List<DriverWorkScheduleStatusResponse> responses = driverWorkScheduleService.getAllSchedulesByManagerWithApprovedStatus();
             return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "All driver schedules for warehouse", responses));
         } catch (SecurityException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN)

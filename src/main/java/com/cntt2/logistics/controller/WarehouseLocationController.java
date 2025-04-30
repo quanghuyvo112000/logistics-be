@@ -1,8 +1,10 @@
 package com.cntt2.logistics.controller;
 
 import com.cntt2.logistics.dto.request.AssignManagerRequest;
+import com.cntt2.logistics.dto.request.SearchWarehouseLocationRequest;
 import com.cntt2.logistics.dto.request.WarehouseLocationRequest;
 import com.cntt2.logistics.dto.response.ApiResponse;
+import com.cntt2.logistics.dto.response.SearchWarehouseLocationResponse;
 import com.cntt2.logistics.dto.response.WarehouseLocationResponse;
 import com.cntt2.logistics.service.WarehouseLocationService;
 import jakarta.persistence.EntityNotFoundException;
@@ -82,6 +84,19 @@ public class WarehouseLocationController {
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiResponse<>(500, "Failed to assign manager", null));
+        }
+    }
+
+    @PostMapping("/search")
+    public ResponseEntity<ApiResponse<List<SearchWarehouseLocationResponse>>> searchWarehouseByLocation(
+            @RequestBody SearchWarehouseLocationRequest request
+    ) {
+        try {
+            List<SearchWarehouseLocationResponse> warehouses = warehouseLocationService.searchWarehouseByLocation(request);
+            return ResponseEntity.ok(new ApiResponse<>(200, "Search results fetched successfully", warehouses));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(500, "Failed to fetch search results", null));
         }
     }
 }
