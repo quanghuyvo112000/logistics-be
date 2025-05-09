@@ -1,7 +1,9 @@
 package com.cntt2.logistics.controller;
 
+import com.cntt2.logistics.dto.request.OrderConfirmPickupRequest;
 import com.cntt2.logistics.dto.request.OrderRequest;
 import com.cntt2.logistics.dto.request.OrderUpdateStatusRequest;
+import com.cntt2.logistics.dto.request.ReceivedAtSourceRequest;
 import com.cntt2.logistics.dto.response.ApiResponse;
 import com.cntt2.logistics.dto.response.OrderByManagerResponse;
 import com.cntt2.logistics.dto.response.OrderResponse;
@@ -29,7 +31,7 @@ public class OrderController {
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<Void>> createOrder(
-            @RequestParam("pickupImage") MultipartFile pickupImage,
+//            @RequestParam("pickupImage") MultipartFile pickupImage,
             @RequestParam("sourceWarehouseId") String sourceWarehouseId,
             @RequestParam("destinationWarehouseId") String destinationWarehouseId,
             @RequestParam("senderPhone") String senderPhone,
@@ -43,7 +45,7 @@ public class OrderController {
     ) {
         try {
             OrderRequest request = OrderRequest.builder()
-                    .pickupImage(pickupImage)
+//                    .pickupImage(pickupImage)
                     .sourceWarehouseId(sourceWarehouseId)
                     .destinationWarehouseId(destinationWarehouseId)
                     .senderPhone(senderPhone)
@@ -101,6 +103,21 @@ public class OrderController {
         }
     }
 
+    @GetMapping("/shipper")
+    public ResponseEntity<ApiResponse<List<OrderResponse>>> getOrdersByShipper() {
+        try {
+            // Lấy danh sách tất cả các đơn hàng
+            List<OrderResponse> orders = orderService.getOrdersByShipper();
+
+            // Trả về danh sách đơn hàng dưới dạng API response
+            return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "Orders fetched successfully", orders));
+        } catch (Exception e) {
+            // Xử lý lỗi nếu có
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Failed to fetch orders", null));
+        }
+    }
+
 
     @GetMapping("/manager")
     public ResponseEntity<ApiResponse<List<OrderByManagerResponse>>> getByManager() {
@@ -130,5 +147,116 @@ public class OrderController {
                     .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Failed to assign order to shipper", null));
         }
     }
+
+    @PostMapping("/assign-shipper-delivery")
+    public ResponseEntity<ApiResponse<Void>> assignOrderToShipperDelivery(@RequestBody OrderUpdateStatusRequest request) {
+        try {
+            orderService.assignOrderToShipperDelivery(request);
+            return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "Order assigned to shipper successfully", null));
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ApiResponse<>(HttpStatus.NOT_FOUND.value(), e.getMessage(), null));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Failed to assign order to shipper", null));
+        }
+    }
+
+    @PostMapping(value = "/confirm-pickup", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ApiResponse<Void>> confirmOrderPickup(
+            @RequestParam("trackingCode") String trackingCode,
+            @RequestParam("pickupImage") MultipartFile pickupImage
+    ) {
+        try {
+            OrderConfirmPickupRequest request = OrderConfirmPickupRequest.builder()
+                    .trackingCode(trackingCode)
+                    .pickupImage(pickupImage)
+                    .build();
+
+            orderService.confirmOrderPickup(request);
+
+            return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "Pickup confirmed successfully", null));
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ApiResponse<>(HttpStatus.NOT_FOUND.value(), e.getMessage(), null));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), e.getMessage(), null));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Failed to confirm pickup", null));
+        }
+    }
+
+    @PostMapping(value = "/confirm-pickup-delivery", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<ApiResponse<Void>> confirmOrderPickupDelivery(
+            @RequestParam("trackingCode") String trackingCode,
+            @RequestParam("pickupImage") MultipartFile pickupImage
+    ) {
+        try {
+            OrderConfirmPickupRequest request = OrderConfirmPickupRequest.builder()
+                    .trackingCode(trackingCode)
+                    .pickupImage(pickupImage)
+                    .build();
+
+            orderService.confirmOrderPickupDelivery(request);
+
+            return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "Pickup confirmed successfully", null));
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ApiResponse<>(HttpStatus.NOT_FOUND.value(), e.getMessage(), null));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), e.getMessage(), null));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Failed to confirm pickup", null));
+        }
+    }
+
+
+    @PostMapping("/recrived-source")
+    public ResponseEntity<ApiResponse<Void>> recrivedAtSource(@RequestBody ReceivedAtSourceRequest request) {
+        try {
+            orderService.recrivedAtSource(request);
+            return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "Order recrived source successfully", null));
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ApiResponse<>(HttpStatus.NOT_FOUND.value(), e.getMessage(), null));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Failed to assign order", null));
+        }
+    }
+
+    @PostMapping("/delivery-warehouse")
+    public ResponseEntity<ApiResponse<Void>> recrivedAtDelivery(@RequestBody ReceivedAtSourceRequest request) {
+        try {
+            orderService.recrivedAtDelivery(request);
+            return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "Order recrived source successfully", null));
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ApiResponse<>(HttpStatus.NOT_FOUND.value(), e.getMessage(), null));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Failed to assign order", null));
+        }
+    }
+
+    @PostMapping("/leaved-source")
+    public ResponseEntity<ApiResponse<Void>> leaveAtSource(@RequestBody ReceivedAtSourceRequest request) {
+        try {
+            orderService.leaveAtSource(request);
+            return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "Order leave source successfully", null));
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ApiResponse<>(HttpStatus.NOT_FOUND.value(), e.getMessage(), null));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Failed to assign order", null));
+        }
+    }
+
+
 
 }

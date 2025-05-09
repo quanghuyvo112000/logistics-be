@@ -11,6 +11,8 @@ public interface OrderRepository extends JpaRepository<Order, String> {
     List<Order> findBySourceWarehouseId(String sourceWarehouse);
     List<Order> findByDestinationWarehouseId(String destinationWarehouse);
     List<Order> findByCustomerId(String customerId);
+    List<Order> findByPickupDriverId(String pickupDriverId);
+    List<Order> findByDeliveryDriverId(String deliveryDriverId);
 
     Order findByTrackingCode(String trackingCode);
 }

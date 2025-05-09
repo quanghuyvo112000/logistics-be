@@ -67,7 +67,7 @@ public class DriverWorkScheduleController {
         }
     }
 
-    @GetMapping("/manager-status")
+    @GetMapping("/list-shipper")
     public ResponseEntity<ApiResponse<List<DriverWorkScheduleStatusResponse>>> getAllSchedulesByManagerWithApprovedStatus() {
         try {
             List<DriverWorkScheduleStatusResponse> responses = driverWorkScheduleService.getAllSchedulesByManagerWithApprovedStatus();
