@@ -38,5 +38,7 @@ public class OrderByManagerResponse {
     LocalDateTime updatedAt;
 
     Boolean isSourceWarehouse;
-    boolean isPickupDriverNull;
+    Boolean isPickupDriverNull;
+    Boolean isDeliveryDriverNull;
+    String warehouseManagerRole;
 }

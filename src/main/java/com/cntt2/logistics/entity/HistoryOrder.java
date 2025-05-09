@@ -31,7 +31,7 @@ public class HistoryOrder {
     @JsonIgnoreProperties({"manager", "drivers"})
     WarehouseLocations warehouse;
 
-    @Column(nullable = false, unique = true, length = 20)
+    @Column(nullable = false, length = 20)
     String trackingCode; // Mã vận đơn
 
     @Column(nullable = false)

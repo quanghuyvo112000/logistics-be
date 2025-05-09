@@ -35,7 +35,8 @@ public class OrderResponse {
 
     String pickupImage;
     String deliveryImage;
-    boolean isPickupDriverNull;
+    Boolean isPickupDriverNull;
+    Boolean isDeliveryDriverNull;
 
     String status;
     LocalDateTime createdAt;
