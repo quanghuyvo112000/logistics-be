@@ -56,6 +56,9 @@ public class User {
     @Column
     String createdBy;
 
+    @Column
+    boolean passwordSet = false;
+
     @Column(nullable = false, updatable = false)
     LocalDateTime createdAt = LocalDateTime.now();
 

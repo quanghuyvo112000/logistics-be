@@ -19,6 +19,7 @@ import com.cntt2.logistics.repository.UserRepository;
 import com.cntt2.logistics.repository.WarehouseLocationsRepository;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -50,6 +51,7 @@ public class WarehouseLocationService {
         return warehouseLocationsRepository.findAll().stream()
                 .map(warehouse -> WarehouseLocationResponse.builder()
                         .id(warehouse.getId())
+                        .code(warehouse.getCode())
                         .name(warehouse.getName())
                         .phone(warehouse.getPhone())
                         .province(warehouse.getProvince())
@@ -90,6 +92,7 @@ public class WarehouseLocationService {
                                         .build())
                                 .collect(Collectors.toList()) : null)
                         .build())
+                .sorted(Comparator.comparing(WarehouseLocationResponse::getProvince)) // Sắp xếp A-Z theo tên kho
                 .collect(Collectors.toList());
     }
 

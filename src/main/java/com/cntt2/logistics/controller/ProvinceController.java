@@ -19,14 +19,14 @@ public class ProvinceController {
     public ResponseEntity<ApiResponse<List<ProvincesResponse>>> getAllWarehouseAddresses() {
         List<ProvincesResponse> addresses;
         try {
-            // Gọi service để lấy danh sách địa chỉ kho hàng
+            // Gọi service để lấy danh sách địa chỉ
             addresses = provincesService.getAllWarehouseAddresses();
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Something went wrong", null));
         }
 
-        // Trả về ApiResponse với danh sách địa chỉ kho hàng
+        // Trả về ApiResponse với danh sách địa chỉ
         return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "Addresses fetched successfully", addresses));
     }
 }
