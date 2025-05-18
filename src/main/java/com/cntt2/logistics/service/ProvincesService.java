@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -26,7 +27,7 @@ public class ProvincesService {
         Map<String, List<Province>> groupedByProvince = provinces.stream()
                 .collect(Collectors.groupingBy(Province::getProvince));
 
-        // Chuyển đổi dữ liệu sang ProvincesResponse
+        // Chuyển đổi và sắp xếp theo tên tỉnh A-Z
         return groupedByProvince.entrySet().stream()
                 .map(entry -> {
                     String provinceName = entry.getKey();
@@ -35,11 +36,13 @@ public class ProvincesService {
                     List<String> districts = provinceList.stream()
                             .map(Province::getDistrict)
                             .distinct()
+                            .sorted()
                             .collect(Collectors.toList());
 
                     List<String> wards = provinceList.stream()
                             .map(Province::getWard)
                             .distinct()
+                            .sorted()
                             .collect(Collectors.toList());
 
                     return ProvincesResponse.builder()
@@ -48,6 +51,8 @@ public class ProvincesService {
                             .ward(wards)
                             .build();
                 })
+                .sorted(Comparator.comparing(ProvincesResponse::getProvince))
                 .collect(Collectors.toList());
     }
+
 }

@@ -1,9 +1,6 @@
 package com.cntt2.logistics.controller;
 
-import com.cntt2.logistics.dto.request.AuthenticationRequest;
-import com.cntt2.logistics.dto.request.IntrospectRequest;
-import com.cntt2.logistics.dto.request.LogoutRequest;
-import com.cntt2.logistics.dto.request.RefreshTokenRequest;
+import com.cntt2.logistics.dto.request.*;
 import com.cntt2.logistics.dto.response.ApiResponse;
 import com.cntt2.logistics.service.AuthenticationService;
 import lombok.AccessLevel;
@@ -88,6 +85,18 @@ public class AuthenticationController {
         }
     }
 
-
+    @PostMapping("/change-password")
+    public ResponseEntity<ApiResponse<Void>> changePassword(@RequestBody ChangePWRequest request) {
+        try {
+            authenticationService.changePassword(request);
+            return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "Password changed successfully", null));
+        } catch (ApplicationContextException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), e.getMessage(), null));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Failed to change password", null));
+        }
+    }
 
 }

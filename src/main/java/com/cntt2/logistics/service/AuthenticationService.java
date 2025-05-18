@@ -1,9 +1,6 @@
 package com.cntt2.logistics.service;
 
-import com.cntt2.logistics.dto.request.AuthenticationRequest;
-import com.cntt2.logistics.dto.request.IntrospectRequest;
-import com.cntt2.logistics.dto.request.LogoutRequest;
-import com.cntt2.logistics.dto.request.RefreshTokenRequest;
+import com.cntt2.logistics.dto.request.*;
 import com.cntt2.logistics.entity.Driver;
 import com.cntt2.logistics.entity.InvalidatedToken;
 import com.cntt2.logistics.entity.Role;
@@ -124,9 +121,15 @@ public class AuthenticationService {
 
             String token = generateToken(user.get());
 
+
+
             Map<String, Object> data = new HashMap<>();
             data.put("token", token);
             data.put("role", user.get().getRole());
+            if (user.get().isPasswordSet() != false ) {
+                data.put("isPassword", user.get().isPasswordSet());
+                data.put("email", user.get().getEmail());
+            }
             return data;
     }
 
@@ -148,6 +151,24 @@ public class AuthenticationService {
             throw new ApplicationContextException("Failed to logout");
         }
     }
+
+    public void changePassword(ChangePWRequest request) {
+        String email = request.getEmail().trim().toLowerCase();
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ApplicationContextException("Email does not exist"));
+
+        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(12);
+
+        boolean matches = passwordEncoder.matches(request.getOldPassword(), user.getPassword());
+        if (!matches) {
+            throw new ApplicationContextException("Old password is incorrect");
+        }
+
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        user.setPasswordSet(false);
+        userRepository.save(user);
+    }
+
 
     public String refreshToken(RefreshTokenRequest request)
             throws ParseException, JOSEException {

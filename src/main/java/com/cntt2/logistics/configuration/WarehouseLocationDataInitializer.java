@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -105,12 +106,16 @@ public class WarehouseLocationDataInitializer {
             Random random = new Random();
 
             for (Map.Entry<String, List<String>> entry : provinceDistrictMap.entrySet()) {
+                int counter = 1;
+                int minus = 99;
                 String provinceName = entry.getKey();
                 List<String> districts = entry.getValue();
                 String address = addresses.get(random.nextInt(addresses.size()));
-                String phone = "090" + (10000000 + random.nextInt(90000000));
-
+                String phone = "090" + String.format("%02d", random.nextInt(100)) +
+                        LocalDateTime.now().format(DateTimeFormatter.ofPattern("ssSS"));
                 for (String district : districts) {
+                    String code = "WH-" + String.format("%01d", counter++) +
+                            LocalDateTime.now().format(DateTimeFormatter.ofPattern("ssSSS"));
                         WarehouseLocations warehouse = WarehouseLocations.builder()
                                 .name("Kho hàng " + district + " - " + provinceName)
                                 .phone(phone)
@@ -119,6 +124,7 @@ public class WarehouseLocationDataInitializer {
                                 .address(address)
                                 .createdAt(LocalDateTime.now())
                                 .updatedAt(LocalDateTime.now())
+                                .code(code)
                                 .build();
                         warehouseLocationsRepository.save(warehouse);
                 }

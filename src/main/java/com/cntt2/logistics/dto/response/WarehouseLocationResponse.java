@@ -16,6 +16,7 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class  WarehouseLocationResponse {
     String id;
+    String code;
     String name;
     String phone;
     String province;

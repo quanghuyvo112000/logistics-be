@@ -41,6 +41,7 @@ public class UserService {
     UserMapper userMapper;
     PasswordEncoder passwordEncoder;
     DriverRepository driverRepository;
+    EmailService emailService;
 
     @Transactional
     public User createCustomer(UserRequest request) {
@@ -55,6 +56,7 @@ public class UserService {
         user.setRole(Role.WAREHOUSE_MANAGER);
         user.setCreatedBy(SecurityContextHolder.getContext().getAuthentication().getName());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setPasswordSet(true);
 
         User savedUser = userRepository.saveAndFlush(user);
 
@@ -64,6 +66,19 @@ public class UserService {
 
         warehouse.setManager(savedUser);
         warehouseLocationsRepository.save(warehouse);
+
+        emailService.sendSimpleMessage(
+                request.getEmail(),
+                "THÔNG TIN MẬT KHẨU ĐĂNG NHẬP CỦA QUẢN LÝ MỚI",
+                "Kính gửi Anh/Chị " + request.getFullName() + ",\n\n" +
+                        "Hệ thống gửi đến Anh/Chị thông tin tài khoản để đăng nhập vào hệ thống quản lý:\n\n" +
+                        "- Tên đăng nhập: " + request.getEmail() + "\n" +
+                        "- Mật khẩu tạm thời: " + request.getPassword() + "\n\n" +
+                        "Anh/Chị vui lòng đăng nhập vào hệ thống http://localhost:5173/authentication, và đổi mật khẩu ngay sau lần đăng nhập đầu tiên để đảm bảo bảo mật thông tin.\n\n" +
+                        "Nếu có bất kỳ thắc mắc hoặc cần hỗ trợ thêm, vui lòng liên hệ bộ phận IT hoặc phản hồi lại email này.\n\n" +
+                        "Trân trọng,\n" +
+                        "Hệ thống. \n"
+        );
 
         return savedUser;
     }
@@ -96,6 +111,7 @@ public class UserService {
                 .createdBy(SecurityContextHolder.getContext().getAuthentication().getName())
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
+                .passwordSet(true)
                 .build();
 
         User savedUser = userRepository.save(user);
@@ -114,7 +130,21 @@ public class UserService {
                 .updatedAt(LocalDateTime.now())
                 .build();
 
+
         driverRepository.save(driver);
+
+        emailService.sendSimpleMessage(
+                request.getEmail(),
+                "THÔNG TIN MẬT KHẨU ĐĂNG NHẬP CỦA NHÂN VIÊN GIAO HÀNG MỚI",
+                "Kính gửi Anh/Chị " + request.getFullName() + ",\n\n" +
+                        "Hệ thống gửi đến Anh/Chị thông tin tài khoản để đăng nhập vào hệ thống quản lý:\n\n" +
+                        "- Tên đăng nhập: " + request.getEmail() + "\n" +
+                        "- Mật khẩu tạm thời: " + request.getPassword() + "\n\n" +
+                        "Anh/Chị vui lòng đăng nhập vào hệ thống http://localhost:5173/authentication, và đổi mật khẩu ngay sau lần đăng nhập đầu tiên để đảm bảo bảo mật thông tin.\n\n" +
+                        "Nếu có bất kỳ thắc mắc hoặc cần hỗ trợ thêm, vui lòng liên hệ bộ phận IT hoặc phản hồi lại email này.\n\n" +
+                        "Trân trọng,\n" +
+                        "Hệ thống. \n"
+        );
     }
 
 

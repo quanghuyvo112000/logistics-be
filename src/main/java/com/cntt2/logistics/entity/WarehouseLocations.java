@@ -23,6 +23,9 @@ public class WarehouseLocations {
     @GeneratedValue(strategy = GenerationType.UUID)
     String id;
 
+    @Column(nullable = false, unique = true, length = 50)
+    String code;
+
     @Column(nullable = false, unique = true, length = 100)
     String name;
 
