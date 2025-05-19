@@ -150,6 +150,7 @@ public class DriverWorkScheduleService {
         return DriverWorkScheduleStatusResponse.builder()
                 .driverId(schedule.getDriver().getId())
                 .nameDriver(schedule.getDriver().getUser().getFullName())
+                .vehicleType(String.valueOf(schedule.getDriver().getVehicleType()))
                 .build();
     }
 

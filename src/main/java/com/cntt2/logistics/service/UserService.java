@@ -14,6 +14,7 @@ import com.cntt2.logistics.mapper.UserMapper;
 import com.cntt2.logistics.repository.DriverRepository;
 import com.cntt2.logistics.repository.UserRepository;
 import com.cntt2.logistics.repository.WarehouseLocationsRepository;
+import com.cntt2.logistics.validate.PasswordGeneratorUtil;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.AccessLevel;
@@ -50,12 +51,14 @@ public class UserService {
 
     @PreAuthorize("hasRole('ADMIN')")
     public User createWarehouseManager(WarehouseManagerRequest request) {
+        String tempPassword = PasswordGeneratorUtil.generateRandomPassword(10);
+
         // Tạo user
         User user = userMapper.toEntity(request);
         user.setEmail(request.getEmail().trim().toLowerCase());
         user.setRole(Role.WAREHOUSE_MANAGER);
         user.setCreatedBy(SecurityContextHolder.getContext().getAuthentication().getName());
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setPassword(passwordEncoder.encode(tempPassword));
         user.setPasswordSet(true);
 
         User savedUser = userRepository.saveAndFlush(user);
@@ -63,22 +66,24 @@ public class UserService {
         // Gán warehouse
         WarehouseLocations warehouse = warehouseLocationsRepository.findById(request.getWarehouseId())
                 .orElseThrow(() -> new EntityNotFoundException("Warehouse not found"));
-
         warehouse.setManager(savedUser);
         warehouseLocationsRepository.save(warehouse);
 
-        emailService.sendSimpleMessage(
-                request.getEmail(),
-                "THÔNG TIN MẬT KHẨU ĐĂNG NHẬP CỦA QUẢN LÝ MỚI",
-                "Kính gửi Anh/Chị " + request.getFullName() + ",\n\n" +
-                        "Hệ thống gửi đến Anh/Chị thông tin tài khoản để đăng nhập vào hệ thống quản lý:\n\n" +
-                        "- Tên đăng nhập: " + request.getEmail() + "\n" +
-                        "- Mật khẩu tạm thời: " + request.getPassword() + "\n\n" +
-                        "Anh/Chị vui lòng đăng nhập vào hệ thống http://localhost:5173/authentication, và đổi mật khẩu ngay sau lần đăng nhập đầu tiên để đảm bảo bảo mật thông tin.\n\n" +
-                        "Nếu có bất kỳ thắc mắc hoặc cần hỗ trợ thêm, vui lòng liên hệ bộ phận IT hoặc phản hồi lại email này.\n\n" +
-                        "Trân trọng,\n" +
-                        "Hệ thống. \n"
-        );
+        // Gửi email sau return (hoặc dùng @Async)
+        new Thread(() -> {
+            emailService.sendSimpleMessage(
+                    request.getEmail(),
+                    "THÔNG TIN MẬT KHẨU ĐĂNG NHẬP CỦA QUẢN LÝ MỚI",
+                    "Kính gửi Anh/Chị " + request.getFullName() + ",\n\n" +
+                            "Hệ thống gửi đến Anh/Chị thông tin tài khoản để đăng nhập vào hệ thống quản lý:\n\n" +
+                            "- Tên đăng nhập: " + request.getEmail() + "\n" +
+                            "- Mật khẩu tạm thời: " + tempPassword + "\n\n" +
+                            "Anh/Chị vui lòng đăng nhập vào hệ thống http://localhost:5173/authentication, và đổi mật khẩu ngay sau lần đăng nhập đầu tiên để đảm bảo bảo mật thông tin.\n\n" +
+                            "Nếu có bất kỳ thắc mắc hoặc cần hỗ trợ thêm, vui lòng liên hệ bộ phận IT hoặc phản hồi lại email này.\n\n" +
+                            "Trân trọng,\n" +
+                            "Hệ thống. \n"
+            );
+        }).start();
 
         return savedUser;
     }
@@ -86,6 +91,9 @@ public class UserService {
     @Transactional
     @PreAuthorize("hasAnyRole('ADMIN', 'WAREHOUSE_MANAGER')")
     public void createDriver(DriverRequest request) {
+
+        String tempPassword = PasswordGeneratorUtil.generateRandomPassword(10);
+
         String email = request.getEmail().trim().toLowerCase();
         String vehiclePlate = request.getVehiclePlate();
         if (userRepository.existsByEmail(email)) {
@@ -102,7 +110,7 @@ public class UserService {
                 .email(email)
                 .birthday(request.getBirthday())
                 .phone(request.getPhone())
-                .password(passwordEncoder.encode(request.getPassword()))
+                .password(passwordEncoder.encode(tempPassword))
                 .province(request.getProvince())
                 .district(request.getDistrict())
                 .ward(request.getWard())
@@ -130,21 +138,23 @@ public class UserService {
                 .updatedAt(LocalDateTime.now())
                 .build();
 
-
         driverRepository.save(driver);
 
-        emailService.sendSimpleMessage(
-                request.getEmail(),
-                "THÔNG TIN MẬT KHẨU ĐĂNG NHẬP CỦA NHÂN VIÊN GIAO HÀNG MỚI",
-                "Kính gửi Anh/Chị " + request.getFullName() + ",\n\n" +
-                        "Hệ thống gửi đến Anh/Chị thông tin tài khoản để đăng nhập vào hệ thống quản lý:\n\n" +
-                        "- Tên đăng nhập: " + request.getEmail() + "\n" +
-                        "- Mật khẩu tạm thời: " + request.getPassword() + "\n\n" +
-                        "Anh/Chị vui lòng đăng nhập vào hệ thống http://localhost:5173/authentication, và đổi mật khẩu ngay sau lần đăng nhập đầu tiên để đảm bảo bảo mật thông tin.\n\n" +
-                        "Nếu có bất kỳ thắc mắc hoặc cần hỗ trợ thêm, vui lòng liên hệ bộ phận IT hoặc phản hồi lại email này.\n\n" +
-                        "Trân trọng,\n" +
-                        "Hệ thống. \n"
-        );
+        // Gửi email sau khi toàn bộ quá trình tạo driver thành công
+        new Thread(() -> {
+            emailService.sendSimpleMessage(
+                    email,
+                    "THÔNG TIN MẬT KHẨU ĐĂNG NHẬP CỦA NHÂN VIÊN GIAO HÀNG MỚI",
+                    "Kính gửi Anh/Chị " + request.getFullName() + ",\n\n" +
+                            "Hệ thống gửi đến Anh/Chị thông tin tài khoản để đăng nhập vào hệ thống quản lý:\n\n" +
+                            "- Tên đăng nhập: " + email + "\n" +
+                            "- Mật khẩu tạm thời: " + tempPassword + "\n\n" +
+                            "Anh/Chị vui lòng đăng nhập vào hệ thống http://localhost:5173/authentication, và đổi mật khẩu ngay sau lần đăng nhập đầu tiên để đảm bảo bảo mật thông tin.\n\n" +
+                            "Nếu có bất kỳ thắc mắc hoặc cần hỗ trợ thêm, vui lòng liên hệ bộ phận IT hoặc phản hồi lại email này.\n\n" +
+                            "Trân trọng,\n" +
+                            "Hệ thống. \n"
+            );
+        }).start();
     }
 
 

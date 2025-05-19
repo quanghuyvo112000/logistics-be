@@ -117,6 +117,7 @@ public class WarehouseLocationService {
         // Trả về WarehouseLocationResponse
         return WarehouseLocationResponse.builder()
                 .id(warehouse.getId())  // Đảm bảo bao gồm ID của kho
+                .code(warehouse.getCode())
                 .name(warehouse.getName())
                 .phone(warehouse.getPhone())
                 .province(warehouse.getProvince())
