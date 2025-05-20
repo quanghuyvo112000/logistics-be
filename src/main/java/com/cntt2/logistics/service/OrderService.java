@@ -385,7 +385,7 @@ public class OrderService {
         // Lưu lịch sử đơn hàng (HistoryOrder)
         HistoryOrder historyOrder = HistoryOrder.builder()
                 .order(order)
-                .warehouse(order.getSourceWarehouse())
+                .warehouse(order.getDestinationWarehouse())
                 .status(OrderStatus.OUT_FOR_DELIVERY)
                 .trackingCode(order.getTrackingCode())
                 .build();
@@ -446,7 +446,7 @@ public class OrderService {
         // Lưu lịch sử đơn hàng
         HistoryOrder historyOrder = HistoryOrder.builder()
                 .order(order)
-                .warehouse(order.getSourceWarehouse())
+                .warehouse(order.getDestinationWarehouse())
                 .status(OrderStatus.DELIVERED_SUCCESSFULLY)
                 .trackingCode(order.getTrackingCode())
                 .build();
@@ -506,7 +506,7 @@ public class OrderService {
         // Lưu lịch sử đơn hàng
         HistoryOrder historyOrder = HistoryOrder.builder()
                 .order(order)
-                .warehouse(order.getSourceWarehouse())
+                .warehouse(order.getDestinationWarehouse())
                 .status(OrderStatus.AT_DESTINATION)
                 .trackingCode(order.getTrackingCode())
                 .build();
@@ -535,7 +535,7 @@ public void leaveAtSource(ReceivedAtSourceRequest request) throws IOException {
     // Lưu lịch sử đơn hàng
     HistoryOrder historyOrder = HistoryOrder.builder()
             .order(order)
-            .warehouse(order.getSourceWarehouse())
+            .warehouse(order.getDestinationWarehouse())
             .status(OrderStatus.LEFT_SOURCE)
             .trackingCode(order.getTrackingCode())
             .build();
