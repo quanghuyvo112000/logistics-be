@@ -25,7 +25,7 @@ import java.util.List;
 public class SecurityConfig {
 
     private final String[] PUBLIC_URLS = {
-            "/auth/**", "/users/customer", "/provinces"
+            "/auth/**", "/users/customer", "/provinces", "/history/**"
     };
 
     @Autowired

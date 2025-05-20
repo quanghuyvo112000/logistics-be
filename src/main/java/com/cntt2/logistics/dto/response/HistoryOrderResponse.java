@@ -6,6 +6,7 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Getter
 @Setter
@@ -14,8 +15,16 @@ import java.time.LocalDateTime;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class HistoryOrderResponse {
+    String trackingCode;
+    List<HistoryItem> histories;
 
-    String warehouseName;
-    String status;
-    String timestamp;
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    @Builder
+    public static class HistoryItem {
+        String status;
+        java.time.LocalDateTime timestamp;
+    }
 }

@@ -17,4 +17,5 @@ import java.time.LocalDateTime;
 public class DriverWorkScheduleStatusResponse {
     String driverId;
     String nameDriver;
+    String vehicleType;
 }
