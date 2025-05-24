@@ -34,6 +34,7 @@ public class OrderController {
 //            @RequestParam("pickupImage") MultipartFile pickupImage,
             @RequestParam("sourceWarehouseId") String sourceWarehouseId,
             @RequestParam("destinationWarehouseId") String destinationWarehouseId,
+            @RequestParam("senderName") String senderName,
             @RequestParam("senderPhone") String senderPhone,
             @RequestParam("senderAddress") String senderAddress,
             @RequestParam("receiverName") String receiverName,
@@ -41,13 +42,15 @@ public class OrderController {
             @RequestParam("receiverAddress") String receiverAddress,
             @RequestParam("weight") Double weight,
             @RequestParam("orderPrice") Double orderPrice,
-            @RequestParam("shippingFee") Double shippingFee
+            @RequestParam("shippingFee") Double shippingFee,
+            @RequestParam("expectedDeliveryTime") String expectedDeliveryTime
     ) {
         try {
             OrderRequest request = OrderRequest.builder()
 //                    .pickupImage(pickupImage)
                     .sourceWarehouseId(sourceWarehouseId)
                     .destinationWarehouseId(destinationWarehouseId)
+                    .senderName(senderName)
                     .senderPhone(senderPhone)
                     .senderAddress(senderAddress)
                     .receiverName(receiverName)
@@ -56,6 +59,7 @@ public class OrderController {
                     .weight(weight)
                     .orderPrice(orderPrice)
                     .shippingFee(shippingFee)
+                    .expectedDeliveryTime(expectedDeliveryTime)
                     .build();
 
             orderService.createOrder(request);

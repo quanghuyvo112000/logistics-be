@@ -2,11 +2,14 @@ package com.cntt2.logistics.service;
 
 import com.cntt2.logistics.dto.request.AssignManagerRequest;
 import com.cntt2.logistics.dto.request.SearchWarehouseLocationRequest;
+import com.cntt2.logistics.dto.request.ShippingLookUpInfoRequest;
 import com.cntt2.logistics.dto.request.WarehouseLocationRequest;
 import com.cntt2.logistics.dto.response.SearchWarehouseLocationResponse;
+import com.cntt2.logistics.dto.response.ShippingInfoResponse;
 import com.cntt2.logistics.dto.response.WarehouseLocationResponse;
 import com.cntt2.logistics.entity.Role;
 import com.cntt2.logistics.entity.User;
+import com.cntt2.logistics.validate.ShippingFeeCalculator;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +25,8 @@ import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static com.cntt2.logistics.validate.ShippingFeeCalculator.computeDateRange;
 
 @Service
 @RequiredArgsConstructor
@@ -188,4 +193,44 @@ public class WarehouseLocationService {
                         warehouse.getName()))
                 .collect(Collectors.toList());
     }
+
+    public ShippingInfoResponse calculateShippingInfo(String fromWarehouseId, String toWarehouseId) {
+        WarehouseLocations fromWarehouse = warehouseLocationsRepository.findById(fromWarehouseId)
+                .orElseThrow(() -> new EntityNotFoundException("From warehouse not found with id: " + fromWarehouseId));
+        WarehouseLocations toWarehouse = warehouseLocationsRepository.findById(toWarehouseId)
+                .orElseThrow(() -> new EntityNotFoundException("To warehouse not found with id: " + toWarehouseId));
+
+        String fromProvince = fromWarehouse.getProvince();
+        String toProvince = toWarehouse.getProvince();
+        //Tính phí vận chuyển theo tỉnh/huyện
+        double fee = ShippingFeeCalculator.calculateShippingFee(fromProvince, toProvince);
+        //Ước tính thời gian giao hàng
+        String rawRange = ShippingFeeCalculator.estimateDeliveryTime(fromProvince, toProvince);
+        //Tính toán phạm vi ngày tháng
+        String dateRange = ShippingFeeCalculator.computeDateRange(rawRange);
+
+        return new ShippingInfoResponse(fee, dateRange);
+    }
+
+    public ShippingInfoResponse calculateShippingInfoByLocation(ShippingLookUpInfoRequest request) {
+        String fromProvince = request.getFromProvince();
+        String toProvince = request.getToProvince();
+
+        if (fromProvince == null || toProvince == null) {
+            throw new IllegalArgumentException("Province information is required");
+        }
+
+        // 1. Tính phí vận chuyển theo tỉnh/huyện
+        double fee = ShippingFeeCalculator.calculateShippingFee(fromProvince, toProvince);
+
+        // 2. Ước tính thời gian giao hàng
+        String rawRange = ShippingFeeCalculator.estimateDeliveryTime(fromProvince, toProvince);
+
+        // 3. Tính toán phạm vi ngày tháng
+        String dateRange = ShippingFeeCalculator.computeDateRange(rawRange);
+
+        return new ShippingInfoResponse(fee, dateRange);
+    }
+
+
 }

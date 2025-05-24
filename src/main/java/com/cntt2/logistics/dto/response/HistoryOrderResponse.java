@@ -16,6 +16,7 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class HistoryOrderResponse {
     String trackingCode;
+    LocalDateTime expectedDeliveryTime;
     List<HistoryItem> histories;
 
     @Getter

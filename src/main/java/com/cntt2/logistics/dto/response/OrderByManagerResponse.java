@@ -33,6 +33,7 @@ public class OrderByManagerResponse {
     String pickupImage;
     String deliveryImage;
 
+    String expectedDeliveryTime;
     String status;
     LocalDateTime createdAt;
     LocalDateTime updatedAt;

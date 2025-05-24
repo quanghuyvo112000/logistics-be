@@ -38,6 +38,7 @@ public class OrderResponse {
     Boolean isPickupDriverNull;
     Boolean isDeliveryDriverNull;
 
+    String expectedDeliveryTime;
     String status;
     LocalDateTime createdAt;
     LocalDateTime updatedAt;

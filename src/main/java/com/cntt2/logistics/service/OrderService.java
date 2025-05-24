@@ -62,7 +62,7 @@ public class OrderService {
                 .sourceWarehouse(sourceWarehouse)
                 .destinationWarehouse(destinationWarehouse)
 
-                .senderName(customer.getFullName())
+                .senderName(request.getSenderName())
                 .senderPhone(request.getSenderPhone())
                 .senderAddress(request.getSenderAddress())
 
@@ -73,6 +73,7 @@ public class OrderService {
                 .weight(request.getWeight())
                 .orderPrice(request.getOrderPrice())
                 .shippingFee(request.getShippingFee())
+                .expectedDeliveryTime(request.getExpectedDeliveryTime())
 
 //                .pickupImage(ImageUtils.compressImage(request.getPickupImage().getBytes()))
                 .status(OrderStatus.CREATED)
@@ -84,6 +85,7 @@ public class OrderService {
 
         HistoryOrder history = HistoryOrder.builder()
                 .order(order)
+                .expectedDeliveryTime(request.getExpectedDeliveryTime())
                 .warehouse(sourceWarehouse)
                 .status(OrderStatus.CREATED)
                 .trackingCode(trackingCode)
@@ -95,7 +97,9 @@ public class OrderService {
     public List<OrderResponse> getAllOrders() {
         List<Order> orders = orderRepository.findAll();
 
-        return orders.stream().map(order -> {
+        return orders.stream()
+                .sorted(Comparator.comparing(Order::getCreatedAt).reversed())
+                .map(order -> {
             return OrderResponse.builder()
                     .trackingCode(order.getTrackingCode())
                     .customerName(order.getCustomer().getFullName())
@@ -113,6 +117,7 @@ public class OrderService {
                     .weight(order.getWeight())
                     .orderPrice(order.getOrderPrice())
                     .shippingFee(order.getShippingFee())
+                    .expectedDeliveryTime(order.getExpectedDeliveryTime())
 
                     .pickupImage(order.getPickupImage() != null
                             ? Base64.getEncoder().encodeToString(ImageUtils.decompressImage(order.getPickupImage()))
@@ -139,7 +144,9 @@ public class OrderService {
 
         List<Order> orders = orderRepository.findByCustomerId(customer.getId());
 
-        return orders.stream().map(order -> {
+        return orders.stream()
+                .sorted(Comparator.comparing(Order::getCreatedAt).reversed())
+                .map(order -> {
             return OrderResponse.builder()
                     .trackingCode(order.getTrackingCode())
                     .customerName(order.getCustomer().getFullName())
@@ -153,6 +160,7 @@ public class OrderService {
                     .receiverName(order.getReceiverName())
                     .receiverPhone(order.getReceiverPhone())
                     .receiverAddress(order.getReceiverAddress())
+                    .expectedDeliveryTime(order.getExpectedDeliveryTime())
 
                     .weight(order.getWeight())
                     .orderPrice(order.getOrderPrice())
@@ -193,7 +201,9 @@ public class OrderService {
         orders.addAll(ordersPickup);
         orders.addAll(ordersDelivery);
 
-        return orders.stream().map(order -> {
+        return orders.stream()
+                .sorted(Comparator.comparing(Order::getCreatedAt).reversed())
+                .map(order -> {
             return OrderResponse.builder()
                     .trackingCode(order.getTrackingCode())
                     .customerName(order.getCustomer().getFullName())
@@ -207,6 +217,7 @@ public class OrderService {
                     .receiverName(order.getReceiverName())
                     .receiverPhone(order.getReceiverPhone())
                     .receiverAddress(order.getReceiverAddress())
+                    .expectedDeliveryTime(order.getExpectedDeliveryTime())
 
                     .weight(order.getWeight())
                     .orderPrice(order.getOrderPrice())
@@ -252,6 +263,7 @@ public class OrderService {
                 .collect(Collectors.toList());
 
         responses.addAll(destinationOrders.stream()
+                .sorted(Comparator.comparing(Order::getCreatedAt).reversed())
                 .map(order -> buildOrderByManagerResponse(order, warehouse, false))  // false: manager từ destination warehouse
                 .collect(Collectors.toList()));
 
@@ -304,6 +316,7 @@ public class OrderService {
                 .receiverName(order.getReceiverName())
                 .receiverPhone(order.getReceiverPhone())
                 .receiverAddress(order.getReceiverAddress())
+                .expectedDeliveryTime(order.getExpectedDeliveryTime())
 
                 .weight(order.getWeight())
                 .orderPrice(order.getOrderPrice())
@@ -350,6 +363,7 @@ public class OrderService {
         // Lưu lịch sử đơn hàng (HistoryOrder)
         HistoryOrder historyOrder = HistoryOrder.builder()
                 .order(order)
+                .expectedDeliveryTime(order.getExpectedDeliveryTime())
                 .warehouse(order.getSourceWarehouse())
                 .status(OrderStatus.ASSIGNED_TO_SHIPPER)
                 .trackingCode(order.getTrackingCode())
@@ -385,6 +399,7 @@ public class OrderService {
         // Lưu lịch sử đơn hàng (HistoryOrder)
         HistoryOrder historyOrder = HistoryOrder.builder()
                 .order(order)
+                .expectedDeliveryTime(order.getExpectedDeliveryTime())
                 .warehouse(order.getDestinationWarehouse())
                 .status(OrderStatus.OUT_FOR_DELIVERY)
                 .trackingCode(order.getTrackingCode())
@@ -415,6 +430,7 @@ public class OrderService {
         // Lưu lịch sử đơn hàng
         HistoryOrder historyOrder = HistoryOrder.builder()
                 .order(order)
+                .expectedDeliveryTime(order.getExpectedDeliveryTime())
                 .warehouse(order.getSourceWarehouse())
                 .status(OrderStatus.PICKED_UP_SUCCESSFULLY)
                 .trackingCode(order.getTrackingCode())
@@ -446,6 +462,7 @@ public class OrderService {
         // Lưu lịch sử đơn hàng
         HistoryOrder historyOrder = HistoryOrder.builder()
                 .order(order)
+                .expectedDeliveryTime(order.getExpectedDeliveryTime())
                 .warehouse(order.getDestinationWarehouse())
                 .status(OrderStatus.DELIVERED_SUCCESSFULLY)
                 .trackingCode(order.getTrackingCode())
@@ -476,6 +493,7 @@ public class OrderService {
         // Lưu lịch sử đơn hàng
         HistoryOrder historyOrder = HistoryOrder.builder()
                 .order(order)
+                .expectedDeliveryTime(order.getExpectedDeliveryTime())
                 .warehouse(order.getSourceWarehouse())
                 .status(OrderStatus.RECEIVED_AT_SOURCE)
                 .trackingCode(order.getTrackingCode())
@@ -506,6 +524,7 @@ public class OrderService {
         // Lưu lịch sử đơn hàng
         HistoryOrder historyOrder = HistoryOrder.builder()
                 .order(order)
+                .expectedDeliveryTime(order.getExpectedDeliveryTime())
                 .warehouse(order.getDestinationWarehouse())
                 .status(OrderStatus.AT_DESTINATION)
                 .trackingCode(order.getTrackingCode())
@@ -535,6 +554,7 @@ public void leaveAtSource(ReceivedAtSourceRequest request) throws IOException {
     // Lưu lịch sử đơn hàng
     HistoryOrder historyOrder = HistoryOrder.builder()
             .order(order)
+            .expectedDeliveryTime(order.getExpectedDeliveryTime())
             .warehouse(order.getDestinationWarehouse())
             .status(OrderStatus.LEFT_SOURCE)
             .trackingCode(order.getTrackingCode())
