@@ -69,6 +69,9 @@ public class Order {
     String receiverAddress;
 
     @Column(nullable = false)
+    String expectedDeliveryTime;
+
+    @Column(nullable = false)
     Double weight;
 
     @Column(nullable = false)

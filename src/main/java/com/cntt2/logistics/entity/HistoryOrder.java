@@ -38,7 +38,7 @@ public class HistoryOrder {
     LocalDateTime timestamp = LocalDateTime.now();
 
     @Column
-    LocalDateTime expectedDeliveryTime;
+    String expectedDeliveryTime;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

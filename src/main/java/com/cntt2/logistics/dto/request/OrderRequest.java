@@ -5,6 +5,8 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -16,6 +18,7 @@ public class OrderRequest {
     String sourceWarehouseId;
     String destinationWarehouseId;
 
+    String senderName;
     String senderPhone;
     String senderAddress;
 
@@ -26,6 +29,8 @@ public class OrderRequest {
     Double weight;
     Double orderPrice;
     Double shippingFee;
+
+    String expectedDeliveryTime;
 
     MultipartFile pickupImage;
 }
