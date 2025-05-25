@@ -1,9 +1,7 @@
 package com.cntt2.logistics.service;
 
-import com.cntt2.logistics.dto.request.AssignManagerRequest;
-import com.cntt2.logistics.dto.request.SearchWarehouseLocationRequest;
-import com.cntt2.logistics.dto.request.ShippingLookUpInfoRequest;
-import com.cntt2.logistics.dto.request.WarehouseLocationRequest;
+import com.cntt2.logistics.dto.request.*;
+import com.cntt2.logistics.dto.response.LookUpWarehouseResponse;
 import com.cntt2.logistics.dto.response.SearchWarehouseLocationResponse;
 import com.cntt2.logistics.dto.response.ShippingInfoResponse;
 import com.cntt2.logistics.dto.response.WarehouseLocationResponse;
@@ -191,6 +189,21 @@ public class WarehouseLocationService {
                 .map(warehouse -> new SearchWarehouseLocationResponse(
                         warehouse.getId(),
                         warehouse.getName()))
+                .collect(Collectors.toList());
+    }
+
+    public List<LookUpWarehouseResponse> lookUpWarehouse(LookUpWarehouseRequest request) {
+        List<WarehouseLocations> warehouses = warehouseLocationsRepository
+                .findByProvince(request.getProvince());
+
+        return warehouses.stream()
+                .map(warehouse -> new LookUpWarehouseResponse(
+                        warehouse.getName(),
+                        warehouse.getProvince(),
+                        warehouse.getDistrict(),
+                        warehouse.getAddress(),
+                        warehouse.getPhone()
+                ))
                 .collect(Collectors.toList());
     }
 

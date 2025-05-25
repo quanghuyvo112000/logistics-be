@@ -13,4 +13,5 @@ public interface WarehouseLocationsRepository extends JpaRepository<WarehouseLoc
     Optional<WarehouseLocations> findByManager(User manager);
 
     List<WarehouseLocations> findByProvinceAndDistrict(String province, String district);
+    List<WarehouseLocations> findByProvince(String province);
 }

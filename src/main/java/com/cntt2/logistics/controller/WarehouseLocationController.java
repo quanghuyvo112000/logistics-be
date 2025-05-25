@@ -1,10 +1,7 @@
 package com.cntt2.logistics.controller;
 
 import com.cntt2.logistics.dto.request.*;
-import com.cntt2.logistics.dto.response.ApiResponse;
-import com.cntt2.logistics.dto.response.SearchWarehouseLocationResponse;
-import com.cntt2.logistics.dto.response.ShippingInfoResponse;
-import com.cntt2.logistics.dto.response.WarehouseLocationResponse;
+import com.cntt2.logistics.dto.response.*;
 import com.cntt2.logistics.service.WarehouseLocationService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AccessLevel;
@@ -92,6 +89,19 @@ public class WarehouseLocationController {
     ) {
         try {
             List<SearchWarehouseLocationResponse> warehouses = warehouseLocationService.searchWarehouseByLocation(request);
+            return ResponseEntity.ok(new ApiResponse<>(200, "Search results fetched successfully", warehouses));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(500, "Failed to fetch search results", null));
+        }
+    }
+
+    @PostMapping("/lookup")
+    public ResponseEntity<ApiResponse<List<LookUpWarehouseResponse>>> lookUpWarehouse(
+            @RequestBody LookUpWarehouseRequest request
+    ) {
+        try {
+            List<LookUpWarehouseResponse> warehouses = warehouseLocationService.lookUpWarehouse(request);
             return ResponseEntity.ok(new ApiResponse<>(200, "Search results fetched successfully", warehouses));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
