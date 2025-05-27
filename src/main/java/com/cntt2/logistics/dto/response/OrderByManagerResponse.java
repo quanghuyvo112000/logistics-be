@@ -37,7 +37,7 @@ public class OrderByManagerResponse {
     String status;
     LocalDateTime createdAt;
     LocalDateTime updatedAt;
-
+    String paymentStatus;
     Boolean isSourceWarehouse;
     Boolean isPickupDriverNull;
     Boolean isDeliveryDriverNull;

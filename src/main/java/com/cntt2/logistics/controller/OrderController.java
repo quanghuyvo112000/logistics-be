@@ -169,11 +169,13 @@ public class OrderController {
     @PostMapping(value = "/confirm-pickup", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<Void>> confirmOrderPickup(
             @RequestParam("trackingCode") String trackingCode,
+            @RequestParam("paymentStatus") String paymentStatus,
             @RequestParam("pickupImage") MultipartFile pickupImage
     ) {
         try {
             OrderConfirmPickupRequest request = OrderConfirmPickupRequest.builder()
                     .trackingCode(trackingCode)
+                    .paymentStatus(paymentStatus)
                     .pickupImage(pickupImage)
                     .build();
 
