@@ -1,9 +1,6 @@
 package com.cntt2.logistics.service;
 
-import com.cntt2.logistics.dto.request.OrderConfirmPickupRequest;
-import com.cntt2.logistics.dto.request.OrderRequest;
-import com.cntt2.logistics.dto.request.OrderUpdateStatusRequest;
-import com.cntt2.logistics.dto.request.ReceivedAtSourceRequest;
+import com.cntt2.logistics.dto.request.*;
 import com.cntt2.logistics.dto.response.OrderByManagerResponse;
 import com.cntt2.logistics.dto.response.OrderResponse;
 import com.cntt2.logistics.entity.*;
@@ -38,8 +35,7 @@ public class OrderService {
     DriverRepository driverRepository;
 
     // Tạo đơn hàng mới
-    public void createOrder(OrderRequest request) throws IOException {
-
+    public Order createOrder(OrderRequest request) throws IOException {
         var context = SecurityContextHolder.getContext();
         var userEmail = context.getAuthentication().getName();
 
@@ -74,9 +70,8 @@ public class OrderService {
                 .orderPrice(request.getOrderPrice())
                 .shippingFee(request.getShippingFee())
                 .expectedDeliveryTime(request.getExpectedDeliveryTime())
-
-                // .pickupImage(ImageUtils.compressImage(request.getPickupImage().getBytes()))
                 .paymentStatus(PaymentStatus.NOTPAID)
+                .shippingPaymentStatus(PaymentStatus.NOTPAID)
                 .status(OrderStatus.CREATED)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
@@ -93,6 +88,8 @@ public class OrderService {
                 .build();
 
         historyOrderRepository.save(history);
+
+        return order;
     }
 
     public List<OrderResponse> getAllOrders() {
@@ -134,6 +131,7 @@ public class OrderService {
                             .createdAt(order.getCreatedAt())
                             .updatedAt(order.getUpdatedAt())
                             .paymentStatus(order.getPaymentStatus().toString())
+                            .shippingPaymentStatus(order.getShippingPaymentStatus().toString())
 
                             .build();
                 }).collect(Collectors.toList());
@@ -185,6 +183,7 @@ public class OrderService {
                             .updatedAt(order.getUpdatedAt())
                             .isPickupDriverNull(order.getPickupDriver() == null)
                             .paymentStatus(order.getPaymentStatus().toString())
+                            .shippingPaymentStatus(order.getShippingPaymentStatus().toString())
 
                             .build();
                 }).collect(Collectors.toList());
@@ -246,6 +245,8 @@ public class OrderService {
                             .isPickupDriverNull(order.getPickupDriver() == null)
                             .isDeliveryDriverNull(order.getDeliveryDriver() == null)
                             .paymentStatus(order.getPaymentStatus().toString())
+                            .shippingPaymentStatus(order.getShippingPaymentStatus().toString())
+
                             .build();
                 }).collect(Collectors.toList());
 
@@ -348,6 +349,7 @@ public class OrderService {
                 .isDeliveryDriverNull(order.getDeliveryDriver() == null)
                 .warehouseManagerRole(warehouseManagerRole)
                 .paymentStatus(order.getPaymentStatus().toString())
+                .shippingPaymentStatus(order.getShippingPaymentStatus().toString())
 
                 .build();
     }
@@ -434,7 +436,6 @@ public class OrderService {
 
         // Cập nhật trạng thái và thời gian
         order.setStatus(OrderStatus.PICKED_UP_SUCCESSFULLY);
-        order.setPaymentStatus(PaymentStatus.valueOf(request.getPaymentStatus()));
         order.setPickupImage(ImageUtils.compressImage(request.getPickupImage().getBytes()));
         order.setUpdatedAt(LocalDateTime.now());
 
@@ -469,6 +470,7 @@ public class OrderService {
         order.setStatus(OrderStatus.DELIVERED_SUCCESSFULLY);
         order.setDeliveryImage(ImageUtils.compressImage(request.getPickupImage().getBytes()));
         order.setPaymentStatus(PaymentStatus.PAID);
+        order.setShippingPaymentStatus(PaymentStatus.PAID);
         order.setUpdatedAt(LocalDateTime.now());
 
         orderRepository.save(order);
@@ -577,6 +579,19 @@ public class OrderService {
 
         historyOrderRepository.save(historyOrder);
     }
+
+    //update setShippingPaymentStatus
+    public void updateShippingPaymentStatus(TrackingCodeRequest request) {
+        Order order = orderRepository.findByTrackingCode(request.getTrackingCode());
+        if (order == null) {
+            throw new EntityNotFoundException("Không tìm thấy đơn hàng với mã: " + request.getTrackingCode());
+        }
+
+        order.setShippingPaymentStatus(PaymentStatus.PAID);
+        order.setShippingFee(0.0);
+        orderRepository.save(order);
+    }
+
 
     private String generateTrackingCode() {
         return "VN" + LocalDateTime.now()

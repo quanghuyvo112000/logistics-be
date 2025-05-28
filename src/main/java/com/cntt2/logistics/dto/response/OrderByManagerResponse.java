@@ -38,6 +38,7 @@ public class OrderByManagerResponse {
     LocalDateTime createdAt;
     LocalDateTime updatedAt;
     String paymentStatus;
+    String shippingPaymentStatus;
     Boolean isSourceWarehouse;
     Boolean isPickupDriverNull;
     Boolean isDeliveryDriverNull;

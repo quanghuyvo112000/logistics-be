@@ -2,7 +2,6 @@ package com.cntt2.logistics.dto.request;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-import org.springframework.web.multipart.MultipartFile;
 
 @Getter
 @Setter
@@ -10,7 +9,6 @@ import org.springframework.web.multipart.MultipartFile;
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class OrderConfirmPickupRequest {
+public class TrackingCodeRequest {
     String trackingCode;
-    MultipartFile pickupImage;
 }
