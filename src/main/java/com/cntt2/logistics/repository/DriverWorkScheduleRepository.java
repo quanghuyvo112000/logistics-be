@@ -13,5 +13,4 @@ public interface DriverWorkScheduleRepository extends JpaRepository<DriverWorkSc
     List<DriverWorkSchedule> findByDriverId(String driverId);
     List<DriverWorkSchedule> findByWarehouseId(String warehouseId);
     List<DriverWorkSchedule> findByWarehouseIdAndStatusAndWorkDate(String warehouseId, ScheduleStatus status, LocalDate workDate);
-
 }
