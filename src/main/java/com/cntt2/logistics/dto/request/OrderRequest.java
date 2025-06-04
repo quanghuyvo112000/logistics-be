@@ -31,6 +31,4 @@ public class OrderRequest {
     Double shippingFee;
 
     String expectedDeliveryTime;
-
-    MultipartFile pickupImage;
 }

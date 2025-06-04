@@ -1,4 +1,4 @@
-package com.cntt2.logistics.dto.response;
+package com.cntt2.logistics.dto.request;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -9,7 +9,6 @@ import lombok.experimental.FieldDefaults;
 @AllArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class ShippingInfoResponse {
-    double shippingFee;
-    String estimatedDeliveryTime;
+public class TrackingCodeRequest {
+    String trackingCode;
 }

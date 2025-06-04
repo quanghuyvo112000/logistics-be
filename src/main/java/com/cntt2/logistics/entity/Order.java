@@ -80,6 +80,14 @@ public class Order {
     @Column(nullable = false)
     Double shippingFee;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    PaymentStatus paymentStatus;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    PaymentStatus shippingPaymentStatus;
+
     @Lob
     @Column(name = "pickupImage", columnDefinition = "LONGBLOB")
     byte[] pickupImage;

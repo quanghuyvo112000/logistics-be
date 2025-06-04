@@ -13,5 +13,4 @@ import org.springframework.web.multipart.MultipartFile;
 public class OrderConfirmPickupRequest {
     String trackingCode;
     MultipartFile pickupImage;
-
 }

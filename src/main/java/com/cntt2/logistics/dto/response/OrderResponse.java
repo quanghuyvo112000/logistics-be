@@ -39,6 +39,8 @@ public class OrderResponse {
     Boolean isDeliveryDriverNull;
 
     String expectedDeliveryTime;
+    String paymentStatus;
+    String shippingPaymentStatus;
     String status;
     LocalDateTime createdAt;
     LocalDateTime updatedAt;

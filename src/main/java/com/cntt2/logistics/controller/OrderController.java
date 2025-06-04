@@ -1,12 +1,11 @@
 package com.cntt2.logistics.controller;
 
-import com.cntt2.logistics.dto.request.OrderConfirmPickupRequest;
-import com.cntt2.logistics.dto.request.OrderRequest;
-import com.cntt2.logistics.dto.request.OrderUpdateStatusRequest;
-import com.cntt2.logistics.dto.request.ReceivedAtSourceRequest;
+import com.cntt2.logistics.dto.request.*;
 import com.cntt2.logistics.dto.response.ApiResponse;
 import com.cntt2.logistics.dto.response.OrderByManagerResponse;
+import com.cntt2.logistics.dto.response.OrderCreateResponse;
 import com.cntt2.logistics.dto.response.OrderResponse;
+import com.cntt2.logistics.entity.Order;
 import com.cntt2.logistics.service.OrderService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.AccessLevel;
@@ -30,8 +29,7 @@ public class OrderController {
     OrderService orderService;
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<ApiResponse<Void>> createOrder(
-//            @RequestParam("pickupImage") MultipartFile pickupImage,
+    public ResponseEntity<ApiResponse<OrderCreateResponse>> createOrder(
             @RequestParam("sourceWarehouseId") String sourceWarehouseId,
             @RequestParam("destinationWarehouseId") String destinationWarehouseId,
             @RequestParam("senderName") String senderName,
@@ -47,7 +45,6 @@ public class OrderController {
     ) {
         try {
             OrderRequest request = OrderRequest.builder()
-//                    .pickupImage(pickupImage)
                     .sourceWarehouseId(sourceWarehouseId)
                     .destinationWarehouseId(destinationWarehouseId)
                     .senderName(senderName)
@@ -62,9 +59,13 @@ public class OrderController {
                     .expectedDeliveryTime(expectedDeliveryTime)
                     .build();
 
-            orderService.createOrder(request);
+            Order createdOrder = orderService.createOrder(request);
 
-            return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "Order created successfully", null));
+            OrderCreateResponse responseData = new OrderCreateResponse(
+                    createdOrder.getTrackingCode()
+            );
+
+            return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "Order created successfully", responseData));
         } catch (MultipartException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), "Invalid file upload", null));
@@ -76,6 +77,7 @@ public class OrderController {
                     .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Failed to create order", null));
         }
     }
+
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<OrderResponse>>> getAllOrders() {
@@ -261,6 +263,19 @@ public class OrderController {
         }
     }
 
+    @PostMapping("/payment-status")
+    public ResponseEntity<ApiResponse<Void>> updatePaymentStatus(@RequestBody TrackingCodeRequest request) {
+        try {
+            orderService.updateShippingPaymentStatus(request);
+            return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "Cập nhật trạng thái thanh toán thành công", null));
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ApiResponse<>(HttpStatus.NOT_FOUND.value(), e.getMessage(), null));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Cập nhật trạng thái thanh toán thất bại", null));
+        }
+    }
 
 
 }
