@@ -82,6 +82,40 @@ public class StatisticController {
         }
     }
 
+    // Lấy thống kê doanh thu theo tháng (cho CUSTOMER)
+    @GetMapping("/customer/monthly/{year}")
+    public ResponseEntity<ApiResponse<List<TimeAmountResponse>>> getMonthlyOrderStatsByCustomer(@PathVariable int year) {
+        try {
+            List<TimeAmountResponse> stats = statisticService.getMonthlyOrderStatsByCustomer(year);
+            return ResponseEntity.ok(
+                    new ApiResponse<>(HttpStatus.OK.value(), "Lấy thống kê doanh thu theo tháng thành công", stats)
+            );
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), e.getMessage(), null));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Lỗi khi lấy thống kê theo tháng", null));
+        }
+    }
+
+    // Lấy thống kê doanh thu theo quý (cho CUSTOMER)
+    @GetMapping("/customer/quarterly/{year}")
+    public ResponseEntity<ApiResponse<List<TimeAmountResponse>>> getQuarterlyOrderStatsByCustomer(@PathVariable int year) {
+        try {
+            List<TimeAmountResponse> stats = statisticService.getQuarterlyOrderStatsByCustomer(year);
+            return ResponseEntity.ok(
+                    new ApiResponse<>(HttpStatus.OK.value(), "Lấy thống kê doanh thu theo quý thành công", stats)
+            );
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), e.getMessage(), null));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Lỗi khi lấy thống kê theo quý", null));
+        }
+    }
+
     //Lấy tổng doanh thu từng kho hàng cho admin
     @GetMapping("/admin/warehouse-amount/{warehouseId}/{year}")
     public ResponseEntity<ApiResponse<List<TimeAmountResponse>>> getWarehouseRevenueById(

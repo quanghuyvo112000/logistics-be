@@ -6,12 +6,10 @@ import com.cntt2.logistics.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-
 import jakarta.transaction.Transactional;
-
 import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 public class DriverAssignmentConfig {
@@ -23,10 +21,9 @@ public class DriverAssignmentConfig {
     private DriverWorkScheduleRepository scheduleRepository;
 
     /**
-     * Thực hiện gán tài xế mỗi 1 giờ.
-     * fixedRate = 3600000 ms = 1 giờ
+        Mỗi giờ chạy 1 lần theo thời gian thực
      */
-    @Scheduled(fixedRate = 60 * 60 * 1000) // hoặc dùng cron nếu cần chi tiết hơn
+    @Scheduled(cron = "0 0 * * * *") // 1 giờ
     @Transactional
     public void assignDriversEveryHour() {
         System.out.println("🔄 Running driver assignment task...");
@@ -39,7 +36,16 @@ public class DriverAssignmentConfig {
     }
 
     private void assignDriverToOrders(List<Order> orders, boolean isPickup) {
-        for (Order order : orders) {
+        // Sắp xếp đơn hàng theo ngày tạo (lâu hơn đi trước)
+        PriorityQueue<Order> orderQueue = new PriorityQueue<>(Comparator.comparing(Order::getCreatedAt));
+        orderQueue.addAll(orders);
+
+        // Lấy danh sách tài xế theo warehouse & trạng thái approved
+        Map<String, List<DriverWorkSchedule>> schedulesByWarehouse = new HashMap<>();
+
+        while (!orderQueue.isEmpty()) {
+            Order order = orderQueue.poll();
+
             String warehouseId = isPickup
                     ? order.getSourceWarehouse().getId()
                     : order.getDestinationWarehouse().getId();
@@ -55,19 +61,31 @@ public class DriverAssignmentConfig {
                 requiredVehicleType = VehicleType.TRUCK;
             }
 
-            List<DriverWorkSchedule> availableSchedules = scheduleRepository
-                    .findByWarehouseIdAndStatusAndWorkDate(
+            // Lấy danh sách tài xế của warehouse này (cached nếu đã lấy)
+            List<DriverWorkSchedule> availableSchedules = schedulesByWarehouse.computeIfAbsent(warehouseId, id ->
+                    scheduleRepository.findByWarehouseIdAndStatusAndWorkDate(
                             warehouseId,
                             ScheduleStatus.APPROVED,
                             LocalDate.now()
-                    );
+                    )
+            );
 
-            Optional<DriverWorkSchedule> matchingScheduleOpt = availableSchedules.stream()
-                    .filter(schedule -> schedule.getDriver().getVehicleType() == requiredVehicleType)
+            // Lọc tài xế có vehicle phù hợp
+            List<Driver> suitableDrivers = availableSchedules.stream()
+                    .map(DriverWorkSchedule::getDriver)
+                    .filter(driver -> driver.getVehicleType() == requiredVehicleType)
+                    .collect(Collectors.toList());
+
+            // Tạo map lưu số đơn hàng đã giao cho mỗi tài xế hôm nay
+            Map<String, Long> driverAssignedCount = getDriverAssignedCount(suitableDrivers, isPickup);
+
+            // Tìm tài xế phù hợp chưa đạt giới hạn 50 đơn/ngày
+            Optional<Driver> selectedDriverOpt = suitableDrivers.stream()
+                    .filter(driver -> driverAssignedCount.getOrDefault(driver.getId(), 0L) < 50)
                     .findFirst();
 
-            if (matchingScheduleOpt.isPresent()) {
-                Driver driver = matchingScheduleOpt.get().getDriver();
+            if (selectedDriverOpt.isPresent()) {
+                Driver driver = selectedDriverOpt.get();
 
                 if (isPickup) {
                     order.setPickupDriver(driver);
@@ -82,9 +100,35 @@ public class DriverAssignmentConfig {
                 orderRepository.save(order);
             } else {
                 String driverType = isPickup ? "pickupDriver" : "deliveryDriver";
-                System.out.println("✖ No suitable " + driverType + " for order " + order.getTrackingCode()
+                System.out.println("✖ No suitable " + driverType + " with capacity < 50 for order " + order.getTrackingCode()
                         + " at warehouse " + warehouseId + " with vehicle: " + requiredVehicleType);
             }
         }
+    }
+
+    /**
+     * Lấy số lượng đơn hàng đã giao cho từng tài xế trong ngày hôm nay, tùy loại driver: pickup hoặc delivery
+     * Nếu cần, gọi lại DB để đếm hoặc đếm trong cache nếu dữ liệu có sẵn.
+     */
+    private Map<String, Long> getDriverAssignedCount(List<Driver> drivers, boolean isPickup) {
+        List<String> driverIds = drivers.stream().map(Driver::getId).toList();
+        LocalDate today = LocalDate.now();
+
+        // Giả sử orderRepository có method đếm số đơn hàng được giao cho tài xế ngày hôm nay
+        // Theo kiểu: countByPickupDriverIdAndCreatedDate or countByDeliveryDriverIdAndCreatedDate
+
+        Map<String, Long> counts = new HashMap<>();
+
+        for (String driverId : driverIds) {
+            long count;
+            if (isPickup) {
+                count = orderRepository.countByPickupDriverIdAndCreatedDate(driverId, today);
+            } else {
+                count = orderRepository.countByDeliveryDriverIdAndCreatedDate(driverId, today);
+            }
+            counts.put(driverId, count);
+        }
+
+        return counts;
     }
 }
