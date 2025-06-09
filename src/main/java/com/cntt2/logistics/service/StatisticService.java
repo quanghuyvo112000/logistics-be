@@ -245,4 +245,46 @@ public class StatisticService {
         }
     }
 
+    //theo tháng của customer
+    @PreAuthorize("hasAnyRole('CUSTOMER')")
+    public List<TimeAmountResponse> getMonthlyOrderStatsByCustomer(int year) {
+        String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new RuntimeException("User not found with email: " + userEmail));
+
+        List<Object[]> raw = orderRepository.getMonthlyOrderStatsByCustomer(user.getId(), year);
+
+        return raw.stream()
+                .map(obj -> {
+                    Integer month = (Integer) obj[0];
+                    Double amount = (Double) obj[1];
+                    TimeAmountResponse resp = new TimeAmountResponse();
+                    resp.setTime("Tháng " + month + "/" + year);
+                    resp.setAmount(amount);
+                    return resp;
+                })
+                .toList();
+    }
+
+    //theo quý của customer
+    @PreAuthorize("hasAnyRole('CUSTOMER')")
+    public List<TimeAmountResponse> getQuarterlyOrderStatsByCustomer(int year) {
+        String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new RuntimeException("User not found with email: " + userEmail));
+
+        List<Object[]> raw = orderRepository.getQuarterlyOrderStatsByCustomer(user.getId(), year);
+
+        return raw.stream()
+                .map(obj -> {
+                    Integer quarter = (Integer) obj[0];
+                    Double amount = (Double) obj[1];
+                    TimeAmountResponse resp = new TimeAmountResponse();
+                    resp.setTime("Quý " + quarter + "/" + year);
+                    resp.setAmount(amount);
+                    return resp;
+                })
+                .toList();
+    }
+
 }
