@@ -1,9 +1,7 @@
 package com.cntt2.logistics.service;
 
 import com.cntt2.logistics.dto.request.IncomeRequest;
-import com.cntt2.logistics.dto.response.IncomeResponse;
-import com.cntt2.logistics.dto.response.TimeAmountResponse;
-import com.cntt2.logistics.dto.response.WarehouseAmountAdminResponse;
+import com.cntt2.logistics.dto.response.*;
 import com.cntt2.logistics.entity.*;
 import com.cntt2.logistics.repository.*;
 import lombok.AccessLevel;
@@ -287,4 +285,83 @@ public class StatisticService {
                 .toList();
     }
 
+    private String getCurrentUserEmail() {
+        return SecurityContextHolder.getContext().getAuthentication().getName();
+    }
+
+    private User getCurrentUser() {
+        String email = getCurrentUserEmail();
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
+    }
+
+    private List<MonthlyOrderStatusResponse> mapToMonthlyOrderStatus(List<Object[]> rawData) {
+        return rawData.stream().map(obj -> {
+            int month = (int) obj[0];
+            long count = ((Number) obj[1]).longValue();
+
+            return MonthlyOrderStatusResponse.builder()
+                    .time(String.format("%02d", month))
+                    .totalOrders((double) count)
+                    .build();
+        }).collect(Collectors.toList());
+    }
+
+    // 1. Thống kê đơn hàng status CREATED và DELIVERED_SUCCESSFULLY theo tháng (CUSTOMER)
+    @PreAuthorize("hasRole('CUSTOMER')")
+    public MonthlyOrderStatusGroupResponse countCreatedAndDeliveredOrdersByMonth(int year) {
+        User user = getCurrentUser();
+
+        // Lấy thống kê theo tháng
+        List<Object[]> createdResult = orderRepository.countCreatedOrdersByMonth(user.getId(), year);
+        List<Object[]> deliveredResult = orderRepository.countDeliveredSuccessfullyOrdersByMonth(user.getId(), year);
+
+        // Mapping
+        List<MonthlyOrderStatusResponse> created = mapToMonthlyOrderStatus(createdResult);
+        List<MonthlyOrderStatusResponse> deliveredSuccessfully = mapToMonthlyOrderStatus(deliveredResult);
+
+        return MonthlyOrderStatusGroupResponse.builder()
+                .created(created)
+                .deliveredSuccessfully(deliveredSuccessfully)
+                .build();
+    }
+
+    // 2. Thống kê đơn hàng status CREATED và DELIVERED_SUCCESSFULLY theo tháng (WAREHOUSE_MANAGER)
+    @PreAuthorize("hasRole('WAREHOUSE_MANAGER')")
+    public MonthlyOrderStatusGroupResponse getMonthlyOrdersByWarehouse(int year) {
+        User user = getCurrentUser();
+
+        WarehouseLocations warehouse = warehouseLocationsRepository.findByManager(user)
+                .orElseThrow(() -> new RuntimeException("Warehouse not found for manager: " + user.getEmail()));
+
+        // Lấy dữ liệu
+        List<Object[]> createdResult = orderRepository.countOrdersByDestinationWarehouseMonthly(warehouse.getId(), year);
+        List<Object[]> deliveredResult = orderRepository.countOrdersBySourceWarehouseMonthly(warehouse.getId(), year);
+
+        // Map về DTO
+        List<MonthlyOrderStatusResponse> created = mapToMonthlyOrderStatus(createdResult);
+        List<MonthlyOrderStatusResponse> deliveredSuccessfully = mapToMonthlyOrderStatus(deliveredResult);
+
+        return MonthlyOrderStatusGroupResponse.builder()
+                .created(created)
+                .deliveredSuccessfully(deliveredSuccessfully)
+                .build();
+    }
+
+    // 3. Thống kê đơn hàng status CREATED và DELIVERED_SUCCESSFULLY theo tháng (ADMIN)
+    @PreAuthorize("hasRole('ADMIN')")
+    public MonthlyOrderStatusGroupResponse getMonthlyOrdersByAdmin(String warehouseId, int year) {
+        // Lấy dữ liệu
+        List<Object[]> createdResult = orderRepository.countOrdersByDestinationAdminMonthly(warehouseId, year);
+        List<Object[]> deliveredResult = orderRepository.countOrdersBySourceAdminMonthly(warehouseId, year);
+
+        // Map về DTO
+        List<MonthlyOrderStatusResponse> created = mapToMonthlyOrderStatus(createdResult);
+        List<MonthlyOrderStatusResponse> deliveredSuccessfully = mapToMonthlyOrderStatus(deliveredResult);
+
+        return MonthlyOrderStatusGroupResponse.builder()
+                .created(created)
+                .deliveredSuccessfully(deliveredSuccessfully)
+                .build();
+    }
 }
