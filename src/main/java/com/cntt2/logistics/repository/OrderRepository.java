@@ -53,117 +53,102 @@ public interface OrderRepository extends JpaRepository<Order, String> {
 
     //1. Query: Đếm số đơn hàng có status = CREATED theo tháng
     @Query(value = """
-                SELECT new com.cntt2.logistics.dto.response.MonthlyOrderStatusResponse(
-                    FUNCTION('DATE_FORMAT', o.createdAt, '%m/%Y'),
-                    COUNT(o.id)
-                )
+                SELECT MONTH(o.createdAt), COUNT(o.id)
                 FROM Order o
                 WHERE YEAR(o.createdAt) = :year
                   AND o.customer.id = :customerId
                   AND o.status = 'CREATED'
-                GROUP BY FUNCTION('DATE_FORMAT', o.createdAt, '%m/%Y')
-                ORDER BY FUNCTION('DATE_FORMAT', o.createdAt, '%m/%Y')
+                GROUP BY MONTH(o.createdAt)
+                ORDER BY MONTH(o.createdAt)
             """)
-    List<MonthlyOrderStatusResponse> countCreatedOrdersByMonth(
+    List<Object[]> countCreatedOrdersByMonth(
             @Param("customerId") String customerId,
             @Param("year") int year
     );
-
 
     //Query: Đếm số đơn hàng có status = DELIVERED_SUCCESSFULLY theo tháng
     @Query(value = """
-                SELECT new com.cntt2.logistics.dto.response.MonthlyOrderStatusResponse(
-                    FUNCTION('DATE_FORMAT', o.createdAt, '%m/%Y'),
-                    COUNT(o.id)
-                )
+                SELECT MONTH(o.createdAt), COUNT(o.id)
                 FROM Order o
                 WHERE YEAR(o.createdAt) = :year
                   AND o.customer.id = :customerId
                   AND o.status = 'DELIVERED_SUCCESSFULLY'
-                GROUP BY FUNCTION('DATE_FORMAT', o.createdAt, '%m/%Y')
-                ORDER BY FUNCTION('DATE_FORMAT', o.createdAt, '%m/%Y')
+                GROUP BY MONTH(o.createdAt)
+                ORDER BY MONTH(o.createdAt)
             """)
-    List<MonthlyOrderStatusResponse> countDeliveredSuccessfullyOrdersByMonth(
+    List<Object[]> countDeliveredSuccessfullyOrdersByMonth(
             @Param("customerId") String customerId,
             @Param("year") int year
     );
 
+
     //Thống kê theo source warehouse
     @Query(value = """
-                SELECT new com.cntt2.logistics.dto.response.MonthlyOrderStatusResponse(
-                    FUNCTION('DATE_FORMAT', o.createdAt, '%m/%Y'),
-                    COUNT(o.id)
-                )
+                SELECT MONTH(o.createdAt), COUNT(o.id)
                 FROM Order o
                 WHERE YEAR(o.createdAt) = :year
-                AND (
-                    o.sourceWarehouse.id = :warehouseId OR o.destinationWarehouse.id = :warehouseId
-                 )
+                  AND (
+                      o.sourceWarehouse.id = :warehouseId OR o.destinationWarehouse.id = :warehouseId
+                  )
                   AND o.status = 'DELIVERED_SUCCESSFULLY'
-                GROUP BY FUNCTION('DATE_FORMAT', o.createdAt, '%m/%Y')
-                ORDER BY FUNCTION('DATE_FORMAT', o.createdAt, '%m/%Y')
+                GROUP BY MONTH(o.createdAt)
+                ORDER BY MONTH(o.createdAt)
             """)
-    List<MonthlyOrderStatusResponse> countOrdersBySourceWarehouseMonthly(
+    List<Object[]> countOrdersBySourceWarehouseMonthly(
             @Param("warehouseId") String warehouseId,
             @Param("year") int year
     );
 
+
     //Thống kê theo destination warehouse
     @Query(value = """
-                SELECT new com.cntt2.logistics.dto.response.MonthlyOrderStatusResponse(
-                    FUNCTION('DATE_FORMAT', o.createdAt, '%m/%Y'),
-                    COUNT(o.id)
-                )
+                SELECT MONTH(o.createdAt), COUNT(o.id)
                 FROM Order o
                 WHERE YEAR(o.createdAt) = :year
-                AND (
-                    o.sourceWarehouse.id = :warehouseId OR o.destinationWarehouse.id = :warehouseId
-                 )
+                  AND (
+                      o.sourceWarehouse.id = :warehouseId OR o.destinationWarehouse.id = :warehouseId
+                  )
                   AND o.status = 'CREATED'
-                GROUP BY FUNCTION('DATE_FORMAT', o.createdAt, '%m/%Y')
-                ORDER BY FUNCTION('DATE_FORMAT', o.createdAt, '%m/%Y')
+                GROUP BY MONTH(o.createdAt)
+                ORDER BY MONTH(o.createdAt)
             """)
-    List<MonthlyOrderStatusResponse> countOrdersByDestinationWarehouseMonthly(
+    List<Object[]> countOrdersByDestinationWarehouseMonthly(
             @Param("warehouseId") String warehouseId,
             @Param("year") int year
     );
+
 
     //ADMIN
     @Query(value = """
-                SELECT new com.cntt2.logistics.dto.response.MonthlyOrderStatusResponse(
-                    FUNCTION('DATE_FORMAT', o.createdAt, '%m/%Y'),
-                    COUNT(o.id)
-                )
+                SELECT MONTH(o.createdAt), COUNT(o.id)
                 FROM Order o
                 WHERE YEAR(o.createdAt) = :year
-                AND (
-                    o.sourceWarehouse.id = :warehouseId OR o.destinationWarehouse.id = :warehouseId
-                 )
+                  AND (
+                      o.sourceWarehouse.id = :warehouseId OR o.destinationWarehouse.id = :warehouseId
+                  )
                   AND o.status = 'DELIVERED_SUCCESSFULLY'
-                GROUP BY FUNCTION('DATE_FORMAT', o.createdAt, '%m/%Y')
-                ORDER BY FUNCTION('DATE_FORMAT', o.createdAt, '%m/%Y')
+                GROUP BY MONTH(o.createdAt)
+                ORDER BY MONTH(o.createdAt)
             """)
-    List<MonthlyOrderStatusResponse> countOrdersBySourceAdminMonthly(
+    List<Object[]> countOrdersBySourceAdminMonthly(
             @Param("warehouseId") String warehouseId,
             @Param("year") int year
     );
 
+
     //Thống kê theo destination warehouse
     @Query(value = """
-                SELECT new com.cntt2.logistics.dto.response.MonthlyOrderStatusResponse(
-                    FUNCTION('DATE_FORMAT', o.createdAt, '%m/%Y'),
-                    COUNT(o.id)
-                )
+                SELECT MONTH(o.createdAt), COUNT(o.id)
                 FROM Order o
                 WHERE YEAR(o.createdAt) = :year
-                AND (
-                    o.sourceWarehouse.id = :warehouseId OR o.destinationWarehouse.id = :warehouseId
-                 )
+                  AND (
+                      o.sourceWarehouse.id = :warehouseId OR o.destinationWarehouse.id = :warehouseId
+                  )
                   AND o.status = 'CREATED'
-                GROUP BY FUNCTION('DATE_FORMAT', o.createdAt, '%m/%Y')
-                ORDER BY FUNCTION('DATE_FORMAT', o.createdAt, '%m/%Y')
+                GROUP BY MONTH(o.createdAt)
+                ORDER BY MONTH(o.createdAt)
             """)
-    List<MonthlyOrderStatusResponse> countOrdersByDestinationAdminMonthly(
+    List<Object[]> countOrdersByDestinationAdminMonthly(
             @Param("warehouseId") String warehouseId,
             @Param("year") int year
     );

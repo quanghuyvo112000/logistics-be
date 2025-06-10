@@ -130,94 +130,44 @@ public class StatisticController {
         }
     }
 
-    @GetMapping("/customer/monthly/created/{year}")
-    public ResponseEntity<ApiResponse<List<MonthlyOrderStatusResponse>>> getMonthlyCreatedOrdersByCustomer(@PathVariable int year) {
+    // CUSTOMER
+    @GetMapping("order/customer/monthly/{year}")
+    public ResponseEntity<ApiResponse<MonthlyOrderStatusGroupResponse>> getCustomerMonthlyStats(@PathVariable int year) {
         try {
-            List<MonthlyOrderStatusResponse> stats = statisticService.countCreatedOrdersByMonth(year);
-            return ResponseEntity.ok(
-                    new ApiResponse<>(HttpStatus.OK.value(), "Lấy thống kê đơn hàng CREATED theo tháng thành công", stats)
-            );
+            MonthlyOrderStatusGroupResponse response = statisticService.countCreatedAndDeliveredOrdersByMonth(year);
+            return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "Lấy thống kê theo tháng cho khách hàng thành công", response));
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), e.getMessage(), null));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Lỗi khi lấy thống kê CREATED theo tháng", null));
+                    .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Lỗi khi lấy thống kê khách hàng", null));
         }
     }
 
-    @GetMapping("/customer/monthly/delivered/{year}")
-    public ResponseEntity<ApiResponse<List<MonthlyOrderStatusResponse>>> getMonthlyDeliveredOrdersByCustomer(@PathVariable int year) {
+    // WAREHOUSE_MANAGER
+    @GetMapping("order/warehouse/monthly/{year}")
+    public ResponseEntity<ApiResponse<MonthlyOrderStatusGroupResponse>> getWarehouseMonthlyStats(@PathVariable int year) {
         try {
-            List<MonthlyOrderStatusResponse> stats = statisticService.countDeliveredSuccessfullyOrdersByMonth(year);
-            return ResponseEntity.ok(
-                    new ApiResponse<>(HttpStatus.OK.value(), "Lấy thống kê đơn hàng DELIVERED theo tháng thành công", stats)
-            );
+            MonthlyOrderStatusGroupResponse response = statisticService.getMonthlyOrdersByWarehouse(year);
+            return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "Lấy thống kê theo tháng cho kho thành công", response));
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), e.getMessage(), null));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Lỗi khi lấy thống kê DELIVERED theo tháng", null));
+                    .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Lỗi khi lấy thống kê kho", null));
         }
     }
 
-    @GetMapping("/warehouse/monthly/delivered/{year}")
-    public ResponseEntity<ApiResponse<List<MonthlyOrderStatusResponse>>> getMonthlyDeliveredOrdersByWarehouse(@PathVariable int year) {
-        try {
-            List<MonthlyOrderStatusResponse> stats = statisticService.getMonthlyDeliveredSuccessfullyOrdersByWarehouse(year);
-            return ResponseEntity.ok(
-                    new ApiResponse<>(HttpStatus.OK.value(), "Lấy thống kê đơn hàng DELIVERED theo tháng của kho thành công", stats)
-            );
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), e.getMessage(), null));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Lỗi khi lấy thống kê DELIVERED của kho", null));
-        }
-    }
-
-    @GetMapping("/warehouse/monthly/created/{year}")
-    public ResponseEntity<ApiResponse<List<MonthlyOrderStatusResponse>>> getMonthlyCreatedOrdersByWarehouse(@PathVariable int year) {
-        try {
-            List<MonthlyOrderStatusResponse> stats = statisticService.getMonthlyCreatedOrdersByWarehouse(year);
-            return ResponseEntity.ok(
-                    new ApiResponse<>(HttpStatus.OK.value(), "Lấy thống kê đơn hàng CREATED theo tháng của kho thành công", stats)
-            );
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new ApiResponse<>(HttpStatus.BAD_REQUEST.value(), e.getMessage(), null));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Lỗi khi lấy thống kê CREATED của kho", null));
-        }
-    }
-
-    //Admin
-    @GetMapping("/admin/monthly/created/{warehouseId}/{year}")
-    public ResponseEntity<ApiResponse<List<MonthlyOrderStatusResponse>>> getCreatedOrdersRevenueById(
+    // ADMIN
+    @GetMapping("order/admin/monthly/{warehouseId}/{year}")
+    public ResponseEntity<ApiResponse<MonthlyOrderStatusGroupResponse>> getAdminMonthlyStats(
             @PathVariable String warehouseId,
             @PathVariable int year) {
         try {
-            List<MonthlyOrderStatusResponse> response = statisticService.getMonthlyCreatedOrdersByAdmin(warehouseId, year);
-            return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), " Lấy thống kê thành công", response));
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new ApiResponse<>(HttpStatus.NOT_FOUND.value(), e.getMessage(), null));
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new ApiResponse<>(HttpStatus.INTERNAL_SERVER_ERROR.value(), "Đã xảy ra lỗi", null));
-        }
-    }
-
-    @GetMapping("/admin/monthly/delivered/{warehouseId}/{year}")
-    public ResponseEntity<ApiResponse<List<MonthlyOrderStatusResponse>>> getDeliveredOrdersRevenueById(
-            @PathVariable String warehouseId,
-            @PathVariable int year) {
-        try {
-            List<MonthlyOrderStatusResponse> response = statisticService.getMonthlyDeliveredSuccessfullyOrdersByAdmin(warehouseId, year);
-            return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), " Lấy thống kê thành công", response));
+            MonthlyOrderStatusGroupResponse response = statisticService.getMonthlyOrdersByAdmin(warehouseId, year);
+            return ResponseEntity.ok(new ApiResponse<>(HttpStatus.OK.value(), "Lấy thống kê theo tháng cho admin thành công", response));
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(new ApiResponse<>(HttpStatus.NOT_FOUND.value(), e.getMessage(), null));
