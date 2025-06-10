@@ -2,6 +2,7 @@ package com.cntt2.logistics.service;
 
 import com.cntt2.logistics.dto.request.IncomeRequest;
 import com.cntt2.logistics.dto.response.IncomeResponse;
+import com.cntt2.logistics.dto.response.MonthlyOrderStatusResponse;
 import com.cntt2.logistics.dto.response.TimeAmountResponse;
 import com.cntt2.logistics.dto.response.WarehouseAmountAdminResponse;
 import com.cntt2.logistics.entity.*;
@@ -287,4 +288,67 @@ public class StatisticService {
                 .toList();
     }
 
+    //theo tháng của customer theo status CREATED
+    @PreAuthorize("hasRole('CUSTOMER')")
+    public List<MonthlyOrderStatusResponse> countCreatedOrdersByMonth(int year) {
+        String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new RuntimeException("User not found with email: " + userEmail));
+
+        return orderRepository.countCreatedOrdersByMonth(user.getId(), year);
+    }
+
+    //theo tháng của customer theo status DELIVERED_SUCCESSFULLY
+    @PreAuthorize("hasRole('CUSTOMER')")
+    public List<MonthlyOrderStatusResponse> countDeliveredSuccessfullyOrdersByMonth(int year) {
+        String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new RuntimeException("User not found with email: " + userEmail));
+
+        return orderRepository.countDeliveredSuccessfullyOrdersByMonth(user.getId(), year);
+    }
+
+    @PreAuthorize("hasAnyRole('WAREHOUSE_MANAGER')")
+    public List<MonthlyOrderStatusResponse> getMonthlyDeliveredSuccessfullyOrdersByWarehouse(int year) {
+        String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new RuntimeException("User not found with email: " + userEmail));
+
+        // Tìm warehouse do người này quản lý
+        WarehouseLocations warehouse = warehouseLocationsRepository.findByManager(user)
+                .orElseThrow(() -> new RuntimeException("Warehouse not found for manager: " + user.getEmail()));
+
+
+        return orderRepository.countOrdersBySourceWarehouseMonthly(warehouse.getId(), year);
+    }
+
+
+
+    @PreAuthorize("hasAnyRole('WAREHOUSE_MANAGER')")
+    public List<MonthlyOrderStatusResponse> getMonthlyCreatedOrdersByWarehouse(int year) {
+        String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new RuntimeException("User not found with email: " + userEmail));
+
+        // Tìm warehouse do người này quản lý
+        WarehouseLocations warehouse = warehouseLocationsRepository.findByManager(user)
+                .orElseThrow(() -> new RuntimeException("Warehouse not found for manager: " + user.getEmail()));
+
+
+        return orderRepository.countOrdersByDestinationWarehouseMonthly(warehouse.getId(), year);
+    }
+
+    @PreAuthorize("hasAnyRole('ADMIN')")
+    public List<MonthlyOrderStatusResponse> getMonthlyDeliveredSuccessfullyOrdersByAdmin(String warehouseId, int year) {
+
+        return orderRepository.countOrdersBySourceWarehouseMonthly(warehouseId, year);
+    }
+
+
+
+    @PreAuthorize("hasAnyRole('ADMIN')")
+    public List<MonthlyOrderStatusResponse> getMonthlyCreatedOrdersByAdmin(String warehouseId, int year) {
+
+        return orderRepository.countOrdersByDestinationWarehouseMonthly(warehouseId, year);
+    }
 }
