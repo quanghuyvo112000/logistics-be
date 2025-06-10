@@ -50,4 +50,106 @@ public interface OrderRepository extends JpaRepository<Order, String> {
 """)
     List<Object[]> getQuarterlyOrderStatsByCustomer(@Param("customerId") String customerId, @Param("year") int year);
 
+    //1. Query: Đếm số đơn hàng có status = CREATED theo tháng
+    @Query(value = """
+                SELECT MONTH(o.createdAt), COUNT(o.id)
+                FROM Order o
+                WHERE YEAR(o.createdAt) = :year
+                  AND o.customer.id = :customerId
+                  AND o.status = 'CREATED'
+                GROUP BY MONTH(o.createdAt)
+                ORDER BY MONTH(o.createdAt)
+            """)
+    List<Object[]> countCreatedOrdersByMonth(
+            @Param("customerId") String customerId,
+            @Param("year") int year
+    );
+
+    //Query: Đếm số đơn hàng có status = DELIVERED_SUCCESSFULLY theo tháng
+    @Query(value = """
+                SELECT MONTH(o.createdAt), COUNT(o.id)
+                FROM Order o
+                WHERE YEAR(o.createdAt) = :year
+                  AND o.customer.id = :customerId
+                  AND o.status = 'DELIVERED_SUCCESSFULLY'
+                GROUP BY MONTH(o.createdAt)
+                ORDER BY MONTH(o.createdAt)
+            """)
+    List<Object[]> countDeliveredSuccessfullyOrdersByMonth(
+            @Param("customerId") String customerId,
+            @Param("year") int year
+    );
+
+
+    //Thống kê theo source warehouse
+    @Query(value = """
+                SELECT MONTH(o.createdAt), COUNT(o.id)
+                FROM Order o
+                WHERE YEAR(o.createdAt) = :year
+                  AND (
+                      o.sourceWarehouse.id = :warehouseId OR o.destinationWarehouse.id = :warehouseId
+                  )
+                  AND o.status = 'DELIVERED_SUCCESSFULLY'
+                GROUP BY MONTH(o.createdAt)
+                ORDER BY MONTH(o.createdAt)
+            """)
+    List<Object[]> countOrdersBySourceWarehouseMonthly(
+            @Param("warehouseId") String warehouseId,
+            @Param("year") int year
+    );
+
+
+    //Thống kê theo destination warehouse
+    @Query(value = """
+                SELECT MONTH(o.createdAt), COUNT(o.id)
+                FROM Order o
+                WHERE YEAR(o.createdAt) = :year
+                  AND (
+                      o.sourceWarehouse.id = :warehouseId OR o.destinationWarehouse.id = :warehouseId
+                  )
+                  AND o.status = 'CREATED'
+                GROUP BY MONTH(o.createdAt)
+                ORDER BY MONTH(o.createdAt)
+            """)
+    List<Object[]> countOrdersByDestinationWarehouseMonthly(
+            @Param("warehouseId") String warehouseId,
+            @Param("year") int year
+    );
+
+
+    //ADMIN
+    @Query(value = """
+                SELECT MONTH(o.createdAt), COUNT(o.id)
+                FROM Order o
+                WHERE YEAR(o.createdAt) = :year
+                  AND (
+                      o.sourceWarehouse.id = :warehouseId OR o.destinationWarehouse.id = :warehouseId
+                  )
+                  AND o.status = 'DELIVERED_SUCCESSFULLY'
+                GROUP BY MONTH(o.createdAt)
+                ORDER BY MONTH(o.createdAt)
+            """)
+    List<Object[]> countOrdersBySourceAdminMonthly(
+            @Param("warehouseId") String warehouseId,
+            @Param("year") int year
+    );
+
+
+    //Thống kê theo destination warehouse
+    @Query(value = """
+                SELECT MONTH(o.createdAt), COUNT(o.id)
+                FROM Order o
+                WHERE YEAR(o.createdAt) = :year
+                  AND (
+                      o.sourceWarehouse.id = :warehouseId OR o.destinationWarehouse.id = :warehouseId
+                  )
+                  AND o.status = 'CREATED'
+                GROUP BY MONTH(o.createdAt)
+                ORDER BY MONTH(o.createdAt)
+            """)
+    List<Object[]> countOrdersByDestinationAdminMonthly(
+            @Param("warehouseId") String warehouseId,
+            @Param("year") int year
+    );
+
 }
