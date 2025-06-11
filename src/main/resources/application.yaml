@@ -1,0 +1,22 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+
+spring:
+  datasource:
+    url: "jdbc:mysql://localhost:3306/logistics"
+    username: root
+    password: root
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+jwt:
+  signerKey: "kLmutCXywGn74V4XaQmMX9vj2nj/VJYH7N3OHSYa5aY1Qm+zMEyW1ZQwRtSbONHI"
+  valid-duration: 86400 #in second 86400
+  refreshable-duration: 604800  #in seconds
+
+CRYPTO:
+  signerKey: "GRt008Vd1bIRzPvjAQzi6k77SfbZWbPUXq41wDyAHUJBvlTQFfciC43Wq6YxaLba"
