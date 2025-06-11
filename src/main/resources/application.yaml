@@ -5,9 +5,9 @@ server:
 
 spring:
   datasource:
-    url: "jdbc:mysql://localhost:3306/logistics"
+    url: "jdbc:mysql://root:ojGuQfsgnuAEhNVEVtnDWbweOXqjqCyy@mysql.railway.internal:3306/railway"
     username: root
-    password: root
+    password: ojGuQfsgnuAEhNVEVtnDWbweOXqjqCyy
   jpa:
     hibernate:
       ddl-auto: update
